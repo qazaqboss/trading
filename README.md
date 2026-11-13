@@ -1,4 +1,4 @@
-# Market Pulse
+# NEON//PULSE — cyberpunk market dashboard
 
 A market dashboard covering stocks, the S&P 500, Bitcoin and gold, with automatic trade ideas. The interface is in Russian.
 

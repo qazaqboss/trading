@@ -46,7 +46,7 @@ export function Sparkline({
           <path d={`${d}L${width},${height}L0,${height}Z`} fill={`url(#${id})`} />
         </>
       )}
-      <path d={d} fill="none" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
+      <path d={d} fill="none" stroke={c} strokeWidth="1.6" strokeLinejoin="round" style={{ filter: `drop-shadow(0 0 3px ${c})` }} />
     </svg>
   );
 }
@@ -60,11 +60,11 @@ export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone
     up: "bg-up/15 text-up ring-up/30",
     down: "bg-down/15 text-down ring-down/30",
     warn: "bg-warn/15 text-warn ring-warn/30",
-    brand: "bg-brand/20 text-indigo-300 ring-brand/40",
+    brand: "bg-brand/20 text-brand ring-brand/40",
     neutral: "bg-white/5 text-muted ring-white/10",
   };
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${tones[tone]}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold tracking-wider uppercase ring-1 ring-inset ${tones[tone]}`}>
       {children}
     </span>
   );
@@ -122,15 +122,15 @@ export function Gauge({ value, signed = false, size = 180, label }: { value: num
     <svg width={size} height={size / 2 + 14} viewBox={`0 0 ${size} ${size / 2 + 14}`} role="img" aria-label={label}>
       <defs>
         <linearGradient id={gid}>
-          <stop offset="0%" stopColor="#f43f5e" />
-          <stop offset="50%" stopColor="#f59e0b" />
-          <stop offset="100%" stopColor="#10b981" />
+          <stop offset="0%" stopColor="#ff2a6d" />
+          <stop offset="50%" stopColor="#d300c5" />
+          <stop offset="100%" stopColor="#05d9e8" />
         </linearGradient>
       </defs>
       <path d={arc} stroke="rgba(255,255,255,0.08)" strokeWidth="12" fill="none" strokeLinecap="round" />
       <path d={arc} stroke={`url(#${gid})`} strokeWidth="12" fill="none" strokeLinecap="round" opacity="0.9" />
-      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#e6ebf5" strokeWidth="3" strokeLinecap="round" />
-      <circle cx={cx} cy={cy} r="6" fill="#e6ebf5" />
+      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#ffffff" strokeWidth="3" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 4px #05d9e8)" }} />
+      <circle cx={cx} cy={cy} r="6" fill="#05d9e8" />
     </svg>
   );
 }
@@ -139,7 +139,7 @@ export function SectionTitle({ title, subtitle, right }: { title: string; subtit
   return (
     <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
       <div>
-        <h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>
+        <h2 className="neon-text text-sm font-bold">{title}</h2>
         {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
       </div>
       {right}
@@ -157,13 +157,13 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="inline-flex rounded-lg bg-white/5 p-0.5 ring-1 ring-white/10">
+    <div className="inline-flex rounded-[2px] bg-white/5 p-0.5 ring-1 ring-white/10">
       {options.map((o) => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
-          className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-            value === o.value ? "bg-brand text-white shadow" : "text-muted hover:text-ink"
+          className={`rounded-[2px] px-2.5 py-1 text-xs font-medium transition ${
+            value === o.value ? "bg-brand text-black shadow-[0_0_12px_rgba(5,217,232,0.7)]" : "text-muted hover:text-ink"
           }`}
         >
           {o.label}

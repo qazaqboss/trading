@@ -61,30 +61,34 @@ export default function Dashboard() {
   const markets = data?.assets.filter((a) => a.cls !== "stock") ?? [];
   const stocks = data?.assets.filter((a) => a.cls === "stock") ?? [];
   const asset = bySymbol.get(selected) ?? data?.assets[0];
-  const accent = ACCENT[asset?.symbol ?? ""] ?? "#6366f1";
+  const accent = ACCENT[asset?.symbol ?? ""] ?? "#05d9e8";
   const longs = data?.ideas.filter((i) => i.direction === "LONG").length ?? 0;
   const shorts = data?.ideas.filter((i) => i.direction === "SHORT").length ?? 0;
 
   return (
     <div className="min-h-screen overflow-x-clip">
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-line bg-bg/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-brand/40 bg-bg/85 shadow-[0_0_24px_rgba(5,217,232,0.15)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand to-up text-lg font-bold text-white shadow-lg shadow-brand/30">
+            <div className="grid h-10 w-10 place-items-center border border-brand bg-brand/10 text-xl font-bold text-brand shadow-[0_0_14px_rgba(5,217,232,0.6)]">
               ◢
             </div>
             <div>
-              <h1 className="text-lg leading-tight font-semibold tracking-tight">Market Pulse</h1>
-              <p className="text-xs text-muted">Акции · S&P 500 · Биткоин · Золото · Идеи</p>
+              <h1 data-text="NEON//PULSE" className="glitch text-xl leading-tight font-black">
+                NEON//PULSE
+              </h1>
+              <p className="text-[11px] tracking-[0.2em] text-neon-pink uppercase">
+                &gt; рынки · s&amp;p 500 · btc · gold · идеи<span className="flicker">_</span>
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3 text-xs">
             {data?.source === "demo" ? (
-              <Pill tone="warn">ДЕМО-ДАННЫЕ</Pill>
+              <Pill tone="warn">⚠ DEMO//DATA</Pill>
             ) : data ? (
               <span className="flex items-center gap-1.5 text-up">
-                <span className="pulse-dot h-2 w-2 rounded-full bg-up" /> LIVE
+                <span className="pulse-dot h-2 w-2 rounded-full bg-up" /> ONLINE
               </span>
             ) : null}
             {data && (
@@ -95,9 +99,9 @@ export default function Dashboard() {
             <button
               onClick={load}
               disabled={loading}
-              className="rounded-lg bg-white/5 px-3 py-1.5 font-medium ring-1 ring-white/10 transition hover:bg-white/10 disabled:opacity-50"
+              className="border border-neon-pink px-3 py-1.5 font-medium text-neon-pink shadow-[0_0_10px_rgba(255,42,109,0.35)] transition hover:bg-neon-pink hover:text-black disabled:opacity-50"
             >
-              {loading ? "Загрузка…" : "↻ Обновить"}
+              {loading ? "SYNC…" : "↻ SYNC"}
             </button>
           </div>
         </div>
@@ -109,7 +113,7 @@ export default function Dashboard() {
           <div className="card border-down/40 p-4 text-sm text-down">Не удалось загрузить данные: {error}</div>
         )}
         {data && data.errors.length > 0 && (
-          <div className="rounded-xl border border-warn/30 bg-warn/10 px-4 py-2 text-xs text-warn">
+          <div className="rounded-[2px] border border-warn/30 bg-warn/10 px-4 py-2 text-xs text-warn">
             {data.errors.slice(0, 3).join(" · ")}
             {data.errors.length > 3 && ` · и ещё ${data.errors.length - 3}`}
           </div>
@@ -168,7 +172,7 @@ export default function Dashboard() {
                         <Pill>{CLASS_LABEL[asset.cls]}</Pill>
                       </div>
                       <div className="mt-1 flex items-baseline gap-3">
-                        <span className="tnum text-3xl font-semibold">{fmtPrice(asset.m.price)}</span>
+                        <span className="tnum neon-text text-3xl font-semibold">{fmtPrice(asset.m.price)}</span>
                         <Change v={asset.m.ch1d} className="text-sm font-semibold" />
                       </div>
                     </div>
@@ -183,8 +187,8 @@ export default function Dashboard() {
                       />
                       <div className="flex gap-3 text-[11px] text-muted">
                         <span className="flex items-center gap-1"><span className="h-0.5 w-3" style={{ background: accent }} />Цена</span>
-                        <span className="flex items-center gap-1"><span className="h-0.5 w-3 bg-[#a78bfa]" />SMA50</span>
-                        <span className="flex items-center gap-1"><span className="h-0.5 w-3 border-t border-dashed border-[#f59e0b]" />SMA200</span>
+                        <span className="flex items-center gap-1"><span className="h-0.5 w-3 bg-[#d300c5]" />SMA50</span>
+                        <span className="flex items-center gap-1"><span className="h-0.5 w-3 border-t border-dashed border-[#f9f002]" />SMA200</span>
                       </div>
                     </div>
                   </div>
@@ -194,7 +198,7 @@ export default function Dashboard() {
                       href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(asset.tv ?? asset.ticker.replace(".", ""))}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs text-indigo-300 hover:text-indigo-200"
+                      className="text-xs text-brand hover:text-ink"
                     >
                       Открыть в TradingView ↗
                     </a>
@@ -241,8 +245,8 @@ export default function Dashboard() {
 function Stat({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
     <div className="card px-4 py-3">
-      <div className="text-[11px] tracking-wide text-faint uppercase">{label}</div>
-      <div className="tnum mt-0.5 truncate text-lg font-semibold">{value}</div>
+      <div className="text-[11px] tracking-[0.15em] text-neon-pink uppercase">{"// "}{label}</div>
+      <div className="tnum neon-text mt-0.5 truncate text-lg font-semibold">{value}</div>
       <div className="text-xs text-muted">{sub}</div>
     </div>
   );
@@ -257,7 +261,7 @@ function Skeleton() {
         ))}
       </div>
       <div className="card h-96 animate-pulse" />
-      <p className="text-center text-sm text-muted">Загружаем котировки…</p>
+      <p className="text-center text-sm text-muted">&gt; подключение к рыночной сети…</p>
     </div>
   );
 }

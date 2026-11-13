@@ -36,10 +36,10 @@ export function HeroCard({ a, accent, active, onClick }: { a: Asset; accent: str
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: accent }} />
-            <span className="text-sm font-medium text-muted">{a.name}</span>
+            <span className="h-2.5 w-2.5" style={{ background: accent, boxShadow: `0 0 10px ${accent}` }} />
+            <span className="text-sm font-medium tracking-widest text-muted uppercase">{a.name}</span>
           </div>
-          <div className="tnum mt-1 text-3xl font-semibold tracking-tight">{fmtPrice(a.m.price)}</div>
+          <div className="tnum mt-1 text-4xl font-semibold tracking-tight" style={{ color: accent, textShadow: `0 0 8px ${accent}, 0 0 24px ${accent}88` }}>{fmtPrice(a.m.price)}</div>
           <div className="mt-1 flex items-center gap-2 text-sm">
             <Change v={a.m.ch1d} className="font-semibold" />
             <span className="text-faint">за день</span>
@@ -59,7 +59,7 @@ export function HeroCard({ a, accent, active, onClick }: { a: Asset; accent: str
             ["1Г", a.m.ch1y],
           ] as const
         ).map(([l, v]) => (
-          <div key={l} className="rounded-lg bg-white/[0.03] px-2 py-1.5">
+          <div key={l} className="rounded-[2px] bg-white/[0.03] px-2 py-1.5">
             <div className="text-faint">{l}</div>
             <Change v={v} digits={1} className="font-medium" />
           </div>
@@ -143,7 +143,7 @@ export function AssetStats({ a }: { a: Asset }) {
           <span className="tnum">{fmtNum(pos, 0)}%</span>
         </div>
         <div className="relative h-2 rounded-full bg-white/10">
-          <div className="absolute inset-y-0 left-0 rounded-full bg-brand/60" style={{ width: `${pos}%` }} />
+          <div className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-neon-purple to-brand" style={{ width: `${pos}%` }} />
         </div>
         <div className="tnum mt-1 flex justify-between text-[11px] text-faint">
           <span>{fmtPrice(m.low52)}</span>
@@ -201,7 +201,7 @@ export function FearGreedPanel({ fg }: { fg: FearGreed | null }) {
                 <div
                   key={i}
                   className="flex-1 rounded-sm"
-                  style={{ height: `${Math.max(6, v)}%`, background: v >= 55 ? "#10b981" : v <= 45 ? "#f43f5e" : "#f59e0b", opacity: 0.4 + (i / fg.history.length) * 0.6 }}
+                  style={{ height: `${Math.max(6, v)}%`, background: v >= 55 ? "#00ff9f" : v <= 45 ? "#ff2a6d" : "#f9f002", opacity: 0.4 + (i / fg.history.length) * 0.6 }}
                   title={`${v}`}
                 />
               ))}
@@ -262,7 +262,7 @@ export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: s
           <article
             key={i.id}
             onClick={() => onSelect(i.symbol)}
-            className="cursor-pointer rounded-xl border border-line bg-white/[0.02] p-4 transition hover:border-brand/50 hover:bg-white/[0.04]"
+            className="cursor-pointer rounded-[2px] border border-line bg-white/[0.02] p-4 transition hover:border-brand hover:shadow-[0_0_16px_rgba(5,217,232,0.25)] hover:bg-white/[0.04]"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
@@ -276,20 +276,20 @@ export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: s
             </div>
             <div className="mt-3 flex items-center gap-2">
               <div className="h-1.5 flex-1 rounded-full bg-white/10">
-                <div className="h-1.5 rounded-full bg-gradient-to-r from-brand to-up" style={{ width: `${i.confidence}%` }} />
+                <div className="h-1.5 rounded-full bg-gradient-to-r from-neon-pink via-neon-purple to-brand" style={{ width: `${i.confidence}%` }} />
               </div>
               <span className="tnum text-[11px] text-muted">уверенность {i.confidence}%</span>
             </div>
             <div className="tnum mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-lg bg-white/[0.04] py-1.5">
+              <div className="rounded-[2px] bg-white/[0.04] py-1.5">
                 <div className="text-faint">Вход</div>
                 <div className="font-semibold">{fmtPrice(i.entry)}</div>
               </div>
-              <div className="rounded-lg bg-down/10 py-1.5">
+              <div className="rounded-[2px] bg-down/10 py-1.5">
                 <div className="text-faint">Стоп</div>
                 <div className="font-semibold text-down">{fmtPrice(i.stop)}</div>
               </div>
-              <div className="rounded-lg bg-up/10 py-1.5">
+              <div className="rounded-[2px] bg-up/10 py-1.5">
                 <div className="text-faint">Цель</div>
                 <div className="font-semibold text-up">{fmtPrice(i.target)}</div>
               </div>
@@ -313,7 +313,7 @@ export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: s
         <div className="mt-4 text-center">
           <button
             onClick={() => setShowAll((v) => !v)}
-            className="rounded-lg bg-white/5 px-4 py-2 text-sm font-medium ring-1 ring-white/10 transition hover:bg-white/10"
+            className="rounded-[2px] bg-white/5 px-4 py-2 text-sm font-medium ring-1 ring-white/10 transition hover:bg-white/10"
           >
             {showAll ? "Свернуть" : `Показать все идеи (${filtered.length})`}
           </button>
@@ -378,7 +378,7 @@ export function StocksTable({ stocks, onSelect, selected }: { stocks: Asset[]; o
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Поиск тикера…"
-            className="w-44 rounded-lg bg-white/5 px-3 py-1.5 text-sm ring-1 ring-white/10 outline-none placeholder:text-faint focus:ring-brand"
+            className="w-44 rounded-[2px] bg-white/5 px-3 py-1.5 text-sm ring-1 ring-white/10 outline-none placeholder:text-faint focus:ring-brand"
           />
         }
       />
@@ -403,7 +403,7 @@ export function StocksTable({ stocks, onSelect, selected }: { stocks: Asset[]; o
               <tr
                 key={s.symbol}
                 onClick={() => onSelect(s.symbol)}
-                className={`cursor-pointer border-b border-line/50 transition hover:bg-white/[0.03] ${selected === s.symbol ? "bg-brand/10" : ""}`}
+                className={`cursor-pointer border-b border-line/60 transition hover:bg-white/[0.03] ${selected === s.symbol ? "bg-brand/10 shadow-[inset_3px_0_0_#05d9e8]" : ""}`}
               >
                 <td className="px-3 py-2.5">
                   <div className="font-semibold">{s.ticker}</div>
@@ -472,7 +472,7 @@ export function Heatmap({ stocks, onSelect }: { stocks: Asset[]; onSelect: (s: s
                 <button
                   key={s.symbol}
                   onClick={() => onSelect(s.symbol)}
-                  className="rounded-lg px-2 py-2.5 text-center ring-1 ring-white/5 transition hover:ring-white/30"
+                  className="rounded-[2px] px-2 py-2.5 text-center ring-1 ring-white/5 transition hover:ring-white/30"
                   style={{ background: heatColor(s.m[p], SPAN[p]) }}
                 >
                   <div className="text-xs font-semibold text-white">{s.ticker}</div>
@@ -524,7 +524,7 @@ export function PerformanceBars({ assets }: { assets: Asset[] }) {
                   style={{
                     left: v >= 0 ? "50%" : `${50 - w}%`,
                     width: `${w}%`,
-                    background: v >= 0 ? "linear-gradient(90deg,#10b98155,#10b981)" : "linear-gradient(270deg,#f43f5e55,#f43f5e)",
+                    background: v >= 0 ? "linear-gradient(90deg,#00ff9f55,#00ff9f)" : "linear-gradient(270deg,#ff2a6d55,#ff2a6d)",
                   }}
                 />
               </div>
@@ -539,7 +539,7 @@ export function PerformanceBars({ assets }: { assets: Asset[] }) {
 
 /* ───────────── Correlation matrix ───────────── */
 export function CorrelationMatrix({ labels, matrix }: { labels: string[]; matrix: number[][] }) {
-  const color = (v: number) => (v >= 0 ? `rgba(99,102,241,${Math.abs(v) * 0.85})` : `rgba(244,63,94,${Math.abs(v) * 0.85})`);
+  const color = (v: number) => (v >= 0 ? `rgba(5,217,232,${Math.abs(v) * 0.85})` : `rgba(255,42,109,${Math.abs(v) * 0.85})`);
   return (
     <section className="card p-5">
       <SectionTitle title="Корреляции" subtitle="Дневные доходности, 90 общих торговых дней" />
@@ -560,7 +560,7 @@ export function CorrelationMatrix({ labels, matrix }: { labels: string[]; matrix
                 {row.map((v, j) => (
                   <td key={j} className="p-0.5">
                     <div
-                      className="flex h-9 w-11 items-center justify-center rounded-md text-white"
+                      className="flex h-9 w-11 items-center justify-center rounded-[2px] text-white"
                       style={{ background: i === j ? "rgba(255,255,255,0.06)" : color(v) }}
                       title={`${labels[i]} / ${labels[j]}: ${v}`}
                     >

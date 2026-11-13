@@ -18,14 +18,14 @@ export default function PriceChart({ history, color, range }: { history: Bar[]; 
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#8b97b0",
-        fontFamily: "ui-sans-serif, system-ui, sans-serif",
+        textColor: "#7fd8e6",
+        fontFamily: "\"Share Tech Mono\", ui-monospace, monospace",
         attributionLogo: false,
       },
-      grid: { vertLines: { color: "rgba(28,39,64,0.5)" }, horzLines: { color: "rgba(28,39,64,0.5)" } },
+      grid: { vertLines: { color: "rgba(211,0,197,0.12)" }, horzLines: { color: "rgba(211,0,197,0.12)" } },
       rightPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false },
-      crosshair: { horzLine: { labelBackgroundColor: "#1c2740" }, vertLine: { labelBackgroundColor: "#1c2740" } },
+      crosshair: { horzLine: { labelBackgroundColor: "#3a0d4f" }, vertLine: { labelBackgroundColor: "#3a0d4f" } },
       localization: { locale: "ru-RU" },
     });
     chartRef.current = chart;
@@ -57,7 +57,7 @@ export default function PriceChart({ history, color, range }: { history: Bar[]; 
     });
     area.setData(slice(closes));
     const l50 = chart.addSeries(LineSeries, {
-      color: "#a78bfa",
+      color: "#d300c5",
       lineWidth: 1,
       priceLineVisible: false,
       lastValueVisible: false,
@@ -65,7 +65,7 @@ export default function PriceChart({ history, color, range }: { history: Bar[]; 
     });
     l50.setData(slice(s50));
     const l200 = chart.addSeries(LineSeries, {
-      color: "#f59e0b",
+      color: "#f9f002",
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
       priceLineVisible: false,
