@@ -3,66 +3,12 @@ import { ALL_ASSETS, DEMO_BASE } from "./assets";
 import { computeMetrics } from "./indicators";
 import { buildCorrelation, buildIdeas, buildRegime } from "./ideas";
 import type { Asset, AssetDef, Bar, FearGreed, MarketPayload } from "./types";
+import { fetchHistory, fetchWithTimeout, mapLimit } from "./yahoo";
 
-const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
 const TTL_MS = 60_000;
 
 let cache: { at: number; data: MarketPayload } | null = null;
 let inflight: Promise<MarketPayload> | null = null;
-
-async function fetchWithTimeout(url: string, ms = 8000): Promise<Response> {
-  const ctrl = new AbortController();
-  const id = setTimeout(() => ctrl.abort(), ms);
-  try {
-    return await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" }, signal: ctrl.signal, cache: "no-store" });
-  } finally {
-    clearTimeout(id);
-  }
-}
-
-interface YahooChart {
-  chart: {
-    result?: {
-      meta: { regularMarketPrice?: number; regularMarketTime?: number };
-      timestamp?: number[];
-      indicators: { quote: { close: (number | null)[] }[] };
-    }[];
-    error?: { description?: string } | null;
-  };
-}
-
-async function fetchYahoo(symbol: string): Promise<Bar[]> {
-  const hosts = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"];
-  let lastErr: unknown;
-  for (const host of hosts) {
-    try {
-      const url = `https://${host}/v8/finance/chart/${encodeURIComponent(symbol)}?range=2y&interval=1d&includePrePost=false`;
-      const res = await fetchWithTimeout(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = (await res.json()) as YahooChart;
-      const r = json.chart.result?.[0];
-      if (!r?.timestamp) throw new Error(json.chart.error?.description ?? "пустой ответ");
-      const closes = r.indicators.quote[0].close;
-      const byDay = new Map<string, number>();
-      r.timestamp.forEach((ts, i) => {
-        const c = closes[i];
-        if (c != null && isFinite(c)) byDay.set(new Date(ts * 1000).toISOString().slice(0, 10), c);
-      });
-      // use the live quote for today's bar when available
-      const live = r.meta.regularMarketPrice;
-      if (live && r.meta.regularMarketTime) {
-        byDay.set(new Date(r.meta.regularMarketTime * 1000).toISOString().slice(0, 10), live);
-      }
-      const bars = [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([t, c]) => ({ t, c }));
-      if (bars.length < 60) throw new Error("недостаточно истории");
-      return bars;
-    } catch (e) {
-      lastErr = e;
-    }
-  }
-  throw lastErr;
-}
 
 async function fetchFearGreed(): Promise<FearGreed | null> {
   try {
@@ -127,25 +73,7 @@ function demoBars(def: AssetDef): Bar[] {
   return days.map((t, i) => ({ t, c: Number(closes[i].toPrecision(6)) }));
 }
 
-async function mapLimit<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R>): Promise<PromiseSettledResult<R>[]> {
-  const out: PromiseSettledResult<R>[] = new Array(items.length);
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: limit }, async () => {
-      while (next < items.length) {
-        const i = next++;
-        try {
-          out[i] = { status: "fulfilled", value: await fn(items[i]) };
-        } catch (reason) {
-          out[i] = { status: "rejected", reason };
-        }
-      }
-    }),
-  );
-  return out;
-}
-
-function toAsset(def: AssetDef, bars: Bar[]): Asset {
+export function toAsset(def: AssetDef, bars: Bar[]): Asset {
   const m = computeMetrics(bars, def.cls === "crypto" ? 365 : 252);
   // keep ~1 year of history for charts, enough for SMA200 overlays computed client-side
   return { ...def, history: bars.slice(-520), m };
@@ -157,7 +85,7 @@ async function build(): Promise<MarketPayload> {
   const [results, fearGreed] = await Promise.all([
     forceDemo
       ? Promise.resolve(ALL_ASSETS.map(() => ({ status: "rejected", reason: new Error("demo") }) as PromiseSettledResult<Bar[]>))
-      : mapLimit(ALL_ASSETS, 6, (d) => fetchYahoo(d.symbol)),
+      : mapLimit(ALL_ASSETS, 6, async (d) => (await fetchHistory(d.symbol)).bars),
     forceDemo ? Promise.resolve(null) : fetchFearGreed(),
   ]);
 

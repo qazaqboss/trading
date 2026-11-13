@@ -14,7 +14,7 @@ function plan(a: Asset, dir: Direction, stopMult: number, rrMult: number, entry 
 }
 
 /** Rule-based technical setups. Returns the strongest setup for the asset, if any. */
-function evaluate(a: Asset): Idea | null {
+export function evaluate(a: Asset): Idea | null {
   const m = a.m;
   const p = m.price;
   const above200 = p > m.sma200;

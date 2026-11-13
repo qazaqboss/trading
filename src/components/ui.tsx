@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
-import { fmtPct, upDown } from "@/lib/format";
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
+import { fmtPct, fmtPrice, upDown } from "@/lib/format";
 
 export function Sparkline({
   data,
@@ -170,5 +170,75 @@ export function Segmented<T extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+/** Price that flashes green/red whenever it changes. */
+export function LivePrice({ value, className = "", style }: { value: number; className?: string; style?: CSSProperties }) {
+  const [prev, setPrev] = useState(value);
+  const [dir, setDir] = useState(0);
+  if (value !== prev) {
+    setDir(value > prev ? 1 : -1);
+    setPrev(value);
+  }
+  return (
+    <span key={value} className={`tnum px-0.5 ${dir > 0 ? "flash-up" : dir < 0 ? "flash-down" : ""} ${className}`} style={style}>
+      {fmtPrice(value)}
+    </span>
+  );
+}
+
+/** Collapsible section; open state is remembered per id in localStorage. */
+export function Collapsible({
+  id,
+  title,
+  subtitle,
+  defaultOpen = false,
+  children,
+}: {
+  id: string;
+  title: string;
+  subtitle?: string;
+  defaultOpen?: boolean;
+  children: (open: boolean) => ReactNode;
+}) {
+  const key = `neon-pulse:open:${id}`;
+  const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const v = localStorage.getItem(key);
+        if (v !== null) setOpen(v === "1");
+      } catch {
+        /* storage unavailable */
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, [key]);
+  const toggle = () => {
+    setOpen((o) => {
+      try {
+        localStorage.setItem(key, o ? "0" : "1");
+      } catch {
+        /* ignore */
+      }
+      return !o;
+    });
+  };
+  return (
+    <section id={id} className="scroll-mt-32">
+      <button
+        onClick={toggle}
+        aria-expanded={open}
+        className={`card flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-panel-2 ${open ? "border-brand" : ""}`}
+      >
+        <div>
+          <h2 className="neon-text text-sm font-bold">{title}</h2>
+          {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
+        </div>
+        <span className={`text-xl text-neon-pink transition-transform ${open ? "rotate-90" : ""}`}>▸</span>
+      </button>
+      {open && <div className="mt-4 space-y-4">{children(open)}</div>}
+    </section>
   );
 }

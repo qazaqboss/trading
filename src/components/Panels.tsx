@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { fmtNum, fmtPct, fmtPrice, heatColor, upDown } from "@/lib/format";
 import type { Asset, Direction, FearGreed, Idea, Regime } from "@/lib/types";
-import { Change, Gauge, Pill, RsiBar, ScorePill, SectionTitle, Segmented, Sparkline, TrendPill } from "./ui";
+import { Change, Gauge, LivePrice, Pill, RsiBar, ScorePill, SectionTitle, Segmented, Sparkline, TrendPill } from "./ui";
 
 /* ───────────── Ticker tape ───────────── */
 export function TickerTape({ assets, onSelect }: { assets: Asset[]; onSelect: (s: string) => void }) {
@@ -14,7 +14,7 @@ export function TickerTape({ assets, onSelect }: { assets: Asset[]; onSelect: (s
         {items.map((a, i) => (
           <button key={i} onClick={() => onSelect(a.symbol)} className="flex items-center gap-2 text-xs whitespace-nowrap">
             <span className="font-semibold text-ink">{a.ticker}</span>
-            <span className="tnum text-muted">{fmtPrice(a.m.price)}</span>
+            <LivePrice value={a.m.price} className="text-muted" />
             <Change v={a.m.ch1d} />
           </button>
         ))}
@@ -39,7 +39,9 @@ export function HeroCard({ a, accent, active, onClick }: { a: Asset; accent: str
             <span className="h-2.5 w-2.5" style={{ background: accent, boxShadow: `0 0 10px ${accent}` }} />
             <span className="text-sm font-medium tracking-widest text-muted uppercase">{a.name}</span>
           </div>
-          <div className="tnum mt-1 text-4xl font-semibold tracking-tight" style={{ color: accent, textShadow: `0 0 8px ${accent}, 0 0 24px ${accent}88` }}>{fmtPrice(a.m.price)}</div>
+          <div className="mt-1 text-4xl font-semibold tracking-tight">
+            <LivePrice value={a.m.price} style={{ color: accent, textShadow: `0 0 8px ${accent}, 0 0 24px ${accent}88` }} />
+          </div>
           <div className="mt-1 flex items-center gap-2 text-sm">
             <Change v={a.m.ch1d} className="font-semibold" />
             <span className="text-faint">за день</span>
@@ -82,7 +84,7 @@ export function MiniCard({ a, active, onClick }: { a: Asset; active: boolean; on
       </div>
       <div className="flex items-end justify-between gap-2">
         <div>
-          <div className="tnum text-lg font-semibold">{fmtPrice(a.m.price)}</div>
+          <div className="text-lg font-semibold"><LivePrice value={a.m.price} /></div>
           <Change v={a.m.ch1d} className="text-xs" />
         </div>
         <Sparkline data={a.history.slice(-30).map((b) => b.c)} width={64} height={28} fill={false} />
@@ -226,7 +228,7 @@ export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: s
   const filtered = ideas
     .filter((i) => dir === "ALL" || i.direction === dir)
     .filter((i) => cls === "all" || (cls === "stock" ? i.cls === "stock" : i.cls !== "stock"));
-  const list = showAll ? filtered : filtered.slice(0, 9);
+  const list = showAll ? filtered : filtered.slice(0, 6);
   return (
     <section className="card p-5">
       <SectionTitle
@@ -309,7 +311,7 @@ export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: s
           </article>
         ))}
       </div>
-      {filtered.length > 9 && (
+      {filtered.length > 6 && (
         <div className="mt-4 text-center">
           <button
             onClick={() => setShowAll((v) => !v)}
@@ -409,7 +411,7 @@ export function StocksTable({ stocks, onSelect, selected }: { stocks: Asset[]; o
                   <div className="font-semibold">{s.ticker}</div>
                   <div className="text-[11px] text-faint">{s.name} · {s.sector}</div>
                 </td>
-                <td className="tnum px-3 text-right font-medium">{fmtPrice(s.m.price)}</td>
+                <td className="px-3 text-right font-medium"><LivePrice value={s.m.price} /></td>
                 <td className="px-3 text-right"><Change v={s.m.ch1d} /></td>
                 <td className="px-3 text-right"><Change v={s.m.ch1w} /></td>
                 <td className="px-3 text-right"><Change v={s.m.ch1m} /></td>

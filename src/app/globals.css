@@ -181,3 +181,18 @@ h1, h2, h3 {
 @media (prefers-reduced-motion: reduce) {
   .marquee, .pulse-dot, .glitch::before, .glitch::after, .flicker { animation: none; }
 }
+
+/* live price flashes */
+@keyframes flash-up {
+  0% { background: rgba(0, 255, 159, 0.45); color: #fff; }
+  100% { background: transparent; }
+}
+@keyframes flash-down {
+  0% { background: rgba(255, 42, 109, 0.45); color: #fff; }
+  100% { background: transparent; }
+}
+.flash-up { animation: flash-up 0.9s ease-out; }
+.flash-down { animation: flash-down 0.9s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .flash-up, .flash-down { animation: none; }
+}

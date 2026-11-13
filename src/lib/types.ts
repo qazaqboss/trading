@@ -82,3 +82,22 @@ export interface MarketPayload {
   correlation: { labels: string[]; matrix: number[][] };
   fearGreed: FearGreed | null;
 }
+
+export interface LiveQuote {
+  symbol: string;
+  price: number;
+  prevClose: number;
+  chPct: number;
+  time: number; // unix seconds
+  name?: string;
+  spark?: number[]; // intraday closes
+}
+
+export interface Mover {
+  symbol: string;
+  name: string;
+  price: number;
+  chPct: number;
+  volume: number;
+  marketCap: number;
+}
