@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ACCENT, CLASS_LABEL, fmtPct, fmtPrice } from "@/lib/format";
 import { useCryptoStream, useLiveQuotes, useUsSession, useWatchlist, type UsSession } from "@/lib/live";
-import type { Asset, Idea, MarketPayload } from "@/lib/types";
+import type { Asset, Candle, Idea, MarketPayload, Timeframe } from "@/lib/types";
 import { SymbolSearch, UsStocksPanel, Watchlist } from "./LivePanels";
-import PriceChart, { type Range } from "./PriceChart";
+import DayTrading, { ChartToolbar } from "./DayTrading";
+import TradingChart, { type Indicators } from "./TradingChart";
+import { useCandles } from "@/lib/candles";
 import {
   AssetStats,
   CorrelationMatrix,
@@ -19,7 +21,7 @@ import {
   StocksTable,
   TickerTape,
 } from "./Panels";
-import { Change, Collapsible, LivePrice, Pill, Segmented } from "./ui";
+import { Change, Collapsible, LivePrice, Pill } from "./ui";
 
 const HERO = ["^GSPC", "BTC-USD", "GC=F"];
 const MAIN_MINI = ["^NDX", "^DJI", "ETH-USD", "CL=F", "^VIX"];
@@ -33,12 +35,48 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState("^GSPC");
-  const [range, setRange] = useState<Range>("1Y");
+  const [tf, setTf] = useState<Timeframe>("1d");
+  const [chartMode, setChartMode] = useState<"candles" | "line">("candles");
+  const [ind, setInd] = useState<Indicators>({ volume: true, ema: false, vwap: false, sma: true, rsi: false });
+  const [view, setView] = useState<"overview" | "day">("overview");
+  const [daySymbol, setDaySymbol] = useState("SPY");
   const [extra, setExtra] = useState<Record<string, Extra>>({});
   const [pending, setPending] = useState<string | null>(null);
   const [assetErr, setAssetErr] = useState<string | null>(null);
   const watch = useWatchlist();
   const session = useUsSession();
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const v = location.hash === "#day" ? "day" : location.hash === "#overview" ? "overview" : localStorage.getItem("neon-pulse:view");
+        if (v === "day" || v === "overview") setView(v);
+        const ds = localStorage.getItem("neon-pulse:daysym");
+        if (ds) setDaySymbol(ds);
+      } catch {
+        /* ignore */
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+  const switchView = (v: "overview" | "day") => {
+    setView(v);
+    try {
+      localStorage.setItem("neon-pulse:view", v);
+      history.replaceState(null, "", v === "day" ? "#day" : "#overview");
+    } catch {
+      /* ignore */
+    }
+    window.scrollTo({ top: 0 });
+  };
+  const pickDaySymbol = (s: string) => {
+    setDaySymbol(s);
+    try {
+      localStorage.setItem("neon-pulse:daysym", s);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -93,6 +131,12 @@ export default function Dashboard() {
   const asset = bySymbol.get(selected) ?? extraAsset ?? assets[0];
   const idea = data?.ideas.find((i) => i.symbol === asset?.symbol) ?? extra[asset?.symbol ?? ""]?.idea ?? null;
   const accent = ACCENT[asset?.symbol ?? ""] ?? "#05d9e8";
+  const chartData = useCandles(asset?.symbol ?? "", tf, view === "overview" && !!asset);
+  const fallbackCandles: Candle[] = useMemo(
+    () => (asset ? asset.history.map((b) => ({ t: Date.parse(b.t) / 1000, o: b.c, h: b.c, l: b.c, c: b.c, v: 0 })) : []),
+    [asset],
+  );
+  const useFallback = !chartData.candles.length && !!chartData.error;
 
   const scrollToChart = () => document.getElementById("chart")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -142,8 +186,26 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
+          <div className="flex border border-brand/50">
+            {(
+              [
+                ["overview", "Обзор"],
+                ["day", "⚡ Дэйтрейдинг"],
+              ] as const
+            ).map(([v, label]) => (
+              <button
+                key={v}
+                onClick={() => switchView(v)}
+                className={`px-3 py-1.5 text-xs font-semibold tracking-wider uppercase transition ${
+                  view === v ? "bg-brand text-black shadow-[0_0_14px_rgba(5,217,232,0.6)]" : "text-brand hover:bg-brand/10"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="order-3 w-full sm:order-none sm:w-auto">
-            <SymbolSearch onOpen={openSymbol} />
+            <SymbolSearch onOpen={(sym, name) => (view === "day" ? pickDaySymbol(sym.toUpperCase()) : openSymbol(sym, name))} />
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <SessionPill s={session} />
@@ -184,7 +246,9 @@ export default function Dashboard() {
           </div>
         )}
 
-        {!data ? (
+        {view === "day" ? (
+          <DayTrading symbol={daySymbol} setSymbol={pickDaySymbol} watchlist={watch.list} cryptoPrices={crypto.prices} />
+        ) : !data ? (
           <Skeleton />
         ) : (
           <>
@@ -236,23 +300,21 @@ export default function Dashboard() {
                         <Change v={asset.m.ch1d} className="text-sm font-semibold" />
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Segmented
-                        value={range}
-                        onChange={setRange}
-                        options={(["1M", "3M", "6M", "1Y", "2Y"] as Range[]).map((r) => ({
-                          value: r,
-                          label: { "1M": "1М", "3M": "3М", "6M": "6М", "1Y": "1Г", "2Y": "2Г" }[r],
-                        }))}
-                      />
-                      <div className="flex gap-3 text-[11px] text-muted">
-                        <span className="flex items-center gap-1"><span className="h-0.5 w-3" style={{ background: accent }} />Цена</span>
-                        <span className="flex items-center gap-1"><span className="h-0.5 w-3 bg-[#d300c5]" />SMA50</span>
-                        <span className="flex items-center gap-1"><span className="h-0.5 w-3 border-t border-dashed border-[#f9f002]" />SMA200</span>
-                      </div>
-                    </div>
                   </div>
-                  <PriceChart history={asset.history} color={accent} range={range} livePrice={asset.m.price} />
+                  <div className="mb-3">
+                    <ChartToolbar tf={tf} setTf={setTf} mode={chartMode} setMode={setChartMode} ind={ind} setInd={setInd} live={chartData.live} />
+                  </div>
+                  {chartData.loading && !chartData.candles.length && !useFallback ? (
+                    <div className="grid h-[460px] place-items-center text-sm text-muted">&gt; загрузка свечей…</div>
+                  ) : (
+                    <TradingChart
+                      candles={useFallback ? fallbackCandles : chartData.candles}
+                      symbol={asset.symbol}
+                      tf={useFallback ? "1d" : tf}
+                      mode={useFallback ? "line" : chartMode}
+                      ind={ind}
+                    />
+                  )}
                   <div className="mt-2 flex justify-end">
                     <a
                       href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(asset.tv ?? asset.ticker.replace("-", "."))}`}

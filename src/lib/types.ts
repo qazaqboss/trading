@@ -101,3 +101,22 @@ export interface Mover {
   volume: number;
   marketCap: number;
 }
+
+export type Timeframe = "1m" | "5m" | "15m" | "1h" | "1d" | "1wk";
+
+export interface Candle {
+  t: number; // unix seconds (bar open)
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v: number;
+}
+
+export interface CandlesPayload {
+  symbol: string;
+  tf: Timeframe;
+  name?: string;
+  source: "yahoo" | "binance" | "demo";
+  candles: Candle[];
+}

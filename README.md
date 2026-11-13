@@ -21,6 +21,17 @@ A market dashboard covering stocks, the S&P 500, Bitcoin and gold, with automati
 
 The main screen shows only the core markets; everything else lives in collapsible sections: "All US stocks", "Mega-caps", "All markets & macro".
 
+## Charts and day trading
+
+- **Candlestick chart** on every screen with timeframes **1m · 5m · 15m · 1h · 1D · 1W** (minute bars include pre/post-market for US stocks), candles/line toggle, volume, EMA 9/21, VWAP, SMA 50/200 and an RSI pane. The cursor shows OHLC, change and volume; times are in your local time zone.
+- **Live candles**: crypto streams from the Binance kline WebSocket (the current candle updates on every trade); stocks, indices and futures refresh the recent window every 3 s (1m) / 5 s (intraday) / 15 s (daily) via `/api/candles`.
+- **"⚡ Day trading" mode** (header switch, also `#day` in the URL):
+  - day levels on the chart: PDH / PDL / PDC, the 15-minute opening range (OR), premarket high/low (PM);
+  - day panel: gap, HOD/LOD, VWAP and distance to it, daily ATR and how much of it is used, relative volume, pivot points;
+  - signal feed with chart markers: EMA 9/21 crosses, VWAP breaks/reclaims, opening-range breakouts (ORB), RSI 30/70, new HOD/LOD;
+  - position-size calculator (deposit, risk %, entry, stop → quantity and 1R/2R/3R targets);
+  - scanner of popular day-trading names plus your watchlist, with a New York clock and countdown to the open/close.
+
 ## Running it
 
 ```bash

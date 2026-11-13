@@ -1,5 +1,5 @@
 import "server-only";
-import type { Bar, LiveQuote, Mover } from "./types";
+import type { Bar, Candle, LiveQuote, Mover, Timeframe } from "./types";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
@@ -210,4 +210,57 @@ export async function searchSymbols(q: string): Promise<{ symbol: string; name: 
   return (json.quotes ?? [])
     .filter((x) => x.symbol && ["EQUITY", "ETF", "INDEX", "CRYPTOCURRENCY", "FUTURE"].includes(x.quoteType ?? ""))
     .map((x) => ({ symbol: x.symbol, name: x.longname ?? x.shortname ?? x.symbol, exch: x.exchDisp ?? "", type: x.quoteType ?? "" }));
+}
+
+/* ───────────── OHLCV candles ───────────── */
+
+
+export const TF_YAHOO: Record<Timeframe, { interval: string; full: string; live: string; prepost: boolean }> = {
+  "1m": { interval: "1m", full: "5d", live: "1d", prepost: true },
+  "5m": { interval: "5m", full: "1mo", live: "1d", prepost: true },
+  "15m": { interval: "15m", full: "1mo", live: "5d", prepost: true },
+  "1h": { interval: "60m", full: "6mo", live: "5d", prepost: false },
+  "1d": { interval: "1d", full: "5y", live: "5d", prepost: false },
+  "1wk": { interval: "1wk", full: "10y", live: "1mo", prepost: false },
+};
+
+interface OhlcResult {
+  meta: ChartMeta;
+  timestamp?: number[];
+  indicators: { quote: { open: (number | null)[]; high: (number | null)[]; low: (number | null)[]; close: (number | null)[]; volume: (number | null)[] }[] };
+}
+
+const candleCache = new Map<string, { at: number; v: { candles: Candle[]; name?: string } }>();
+
+export async function fetchCandles(symbol: string, tf: Timeframe, live: boolean): Promise<{ candles: Candle[]; name?: string }> {
+  const cfg = TF_YAHOO[tf];
+  const range = live ? cfg.live : cfg.full;
+  const key = `${symbol}|${tf}|${range}`;
+  const hit = candleCache.get(key);
+  if (hit && Date.now() - hit.at < 4000) return hit.v;
+
+  const json = await yahooJson<{ chart: { result?: OhlcResult[]; error?: { description?: string } | null } }>(
+    `/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${cfg.interval}&includePrePost=${cfg.prepost}`,
+  );
+  const r = json.chart.result?.[0];
+  if (!r?.timestamp) throw new Error(json.chart.error?.description ?? "пустой ответ");
+  const q = r.indicators.quote[0];
+  const candles: Candle[] = [];
+  r.timestamp.forEach((t, i) => {
+    const o = q.open[i], h = q.high[i], l = q.low[i], c = q.close[i];
+    if (o == null || h == null || l == null || c == null) return;
+    candles.push({ t, o, h, l, c, v: q.volume[i] ?? 0 });
+  });
+  // Yahoo's daily/weekly bars lag the live quote — patch the last bar with it
+  const last = candles[candles.length - 1];
+  const px = r.meta.regularMarketPrice;
+  if (last && px && (tf === "1d" || tf === "1wk")) {
+    last.c = px;
+    last.h = Math.max(last.h, px);
+    last.l = Math.min(last.l, px);
+  }
+  const v = { candles, name: r.meta.longName ?? r.meta.shortName };
+  candleCache.set(key, { at: Date.now(), v });
+  if (candleCache.size > 2000) candleCache.clear();
+  return v;
 }

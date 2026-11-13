@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usSessionAt, type UsSession } from "./ta";
 import type { LiveQuote } from "./types";
 
 /** Polls /api/live for the given symbols while the tab is visible. */
@@ -126,22 +127,8 @@ export function useCryptoStream(enabled = true) {
   return { prices, connected };
 }
 
-export type UsSession = "pre" | "open" | "post" | "closed";
-
-/** US equity session by New York clock (weekends treated as closed; exchange holidays not modelled). */
-export function usSession(d = new Date()): UsSession {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "numeric", hour12: false })
-      .formatToParts(d)
-      .map((p) => [p.type, p.value]),
-  );
-  if (parts.weekday === "Sat" || parts.weekday === "Sun") return "closed";
-  const mins = (Number(parts.hour) % 24) * 60 + Number(parts.minute);
-  if (mins >= 240 && mins < 570) return "pre";
-  if (mins >= 570 && mins < 960) return "open";
-  if (mins >= 960 && mins < 1200) return "post";
-  return "closed";
-}
+export type { UsSession } from "./ta";
+export const usSession = (d = new Date()) => usSessionAt(Math.floor(d.getTime() / 1000));
 
 export function useUsSession(): UsSession | null {
   const [s, setS] = useState<UsSession | null>(null);
