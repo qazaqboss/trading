@@ -12,6 +12,15 @@ A market dashboard covering stocks, the S&P 500, Bitcoin and gold, with automati
 - **Stock table** (sortable, with search), a sector heatmap, cross-asset returns and a correlation matrix.
 - Data refreshes every 60 seconds.
 
+## Live mode
+
+- **Crypto (BTC, ETH, SOL)**: tick prices from the public Binance WebSocket, straight to the browser, refreshed every second.
+- **Stocks, indices, gold, oil**: `/api/live` batches Yahoo Finance quotes every 5 seconds (4 s server cache). Prices flash green/red on change and the chart's last point moves live.
+- **All US stocks**: a directory of every NYSE / Nasdaq / NYSE American / Arca listing (`/api/symbols`, from Nasdaq Trader, refreshed every 12 h), header search by any ticker or name, full technical analysis for any symbol (`/api/asset`), and day gainers / losers / most active (`/api/movers`).
+- **My stocks**: a personal watchlist with live prices and intraday sparklines; add with ☆ (stored in the browser).
+
+The main screen shows only the core markets; everything else lives in collapsible sections: "All US stocks", "Mega-caps", "All markets & macro".
+
 ## Running it
 
 ```bash
