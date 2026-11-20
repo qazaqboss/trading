@@ -32,6 +32,13 @@ The main screen shows only the core markets; everything else lives in collapsibl
   - position-size calculator (deposit, risk %, entry, stop → quantity and 1R/2R/3R targets);
   - scanner of popular day-trading names plus your watchlist, with a New York clock and countdown to the open/close.
 
+## Finviz fundamentals and live news
+
+- **Fundamentals for any US stock** (`/api/fundamentals?symbol=`): the full Finviz snapshot — P/E, Forward P/E, PEG, P/S, P/B, P/FCF, EV/EBITDA, EPS (ttm / next Q / next Y / growth), margins, ROA/ROE/ROIC, debt and liquidity, dividends, insider/institutional ownership, short float, analyst target and rating, and more. Shown grouped in Russian, with an "All metrics" toggle. Scraping follows the selectors of the open-source [lit26/finvizfinance](https://github.com/lit26/finvizfinance) (`table.snapshot-table2`, `table.fullview-news-outer`). If Finviz blocks the request, it falls back to Yahoo `quoteSummary` (cookie + crumb, as yfinance does).
+- **Ticker news** (`/api/news?symbol=`): from Finviz (Reuters, Bloomberg, Benzinga…), falling back to Yahoo; refreshed every minute, new items get a NEW tag.
+- **Market news feed** (`/api/news`): Finviz News + CNBC, MarketWatch, Yahoo Finance, Investing.com and Cointelegraph RSS, de-duplicated and sorted by time, refreshed every minute, with source and text filters.
+- In day-trading mode: a compact Finviz block (float, short float, relative volume, earnings date) and the active ticker's news.
+
 ## Running it
 
 ```bash

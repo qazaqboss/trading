@@ -120,3 +120,25 @@ export interface CandlesPayload {
   source: "yahoo" | "binance" | "demo";
   candles: Candle[];
 }
+
+export interface NewsItem {
+  id: string;
+  title: string;
+  url: string;
+  source: string;
+  time: number; // unix seconds
+  tickers?: string[];
+}
+
+export interface Fundamentals {
+  symbol: string;
+  source: "finviz" | "yahoo" | "demo";
+  name?: string;
+  sector?: string;
+  industry?: string;
+  country?: string;
+  exchange?: string;
+  fields: Record<string, string>; // Finviz snapshot labels → raw display values
+  news: NewsItem[];
+  updatedAt: string;
+}

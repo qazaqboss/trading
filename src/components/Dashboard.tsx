@@ -6,6 +6,7 @@ import { useCryptoStream, useLiveQuotes, useUsSession, useWatchlist, type UsSess
 import type { Asset, Candle, Idea, MarketPayload, Timeframe } from "@/lib/types";
 import { SymbolSearch, UsStocksPanel, Watchlist } from "./LivePanels";
 import DayTrading, { ChartToolbar } from "./DayTrading";
+import { FundamentalsPanel, MarketNewsPanel, TickerNewsPanel } from "./FinPanels";
 import TradingChart, { type Indicators } from "./TradingChart";
 import { useCandles } from "@/lib/candles";
 import {
@@ -334,8 +335,18 @@ export default function Dashboard() {
               </section>
             )}
 
+            {/* Fundamentals + news for the selected asset */}
+            {asset && (
+              <div className="grid gap-4 xl:grid-cols-[1fr_400px]">
+                {asset.cls === "stock" ? <FundamentalsPanel symbol={asset.symbol} price={asset.m.price} /> : <MarketNewsPanel />}
+                <TickerNewsPanel symbol={asset.symbol} />
+              </div>
+            )}
+
             {/* Top ideas */}
             <IdeasPanel ideas={data.ideas} onSelect={openSymbol} />
+
+            {asset?.cls === "stock" && <MarketNewsPanel />}
 
             {/* Hidden sections */}
             <Collapsible id="us-stocks" title="Все акции США" subtitle="Справочник NYSE / Nasdaq, лидеры роста и падения, онлайн-цены, поиск">

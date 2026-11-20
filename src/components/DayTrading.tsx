@@ -6,6 +6,7 @@ import { fmtNum, fmtPct, fmtPrice, upDown } from "@/lib/format";
 import { useLiveQuotes } from "@/lib/live";
 import { TF_LABEL, dayStats, followsUsHours, nyClock, scanSignals, usSessionAt, type DayStats, type TradeSignal } from "@/lib/ta";
 import type { LiveQuote, Timeframe } from "@/lib/types";
+import { DayFundamentals, TickerNewsPanel } from "./FinPanels";
 import TradingChart, { type Indicators, type Level } from "./TradingChart";
 import { Change, LivePrice, Pill, SectionTitle, Segmented, Sparkline } from "./ui";
 
@@ -411,6 +412,8 @@ export default function DayTrading({
         </div>
         <div className="space-y-4">
           <StatsPanel st={st} price={price} symbol={symbol} />
+          <DayFundamentals symbol={symbol} />
+          <TickerNewsPanel symbol={symbol} dense maxH="max-h-[340px]" />
         </div>
       </div>
 
