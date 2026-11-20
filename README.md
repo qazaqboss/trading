@@ -39,6 +39,16 @@ The main screen shows only the core markets; everything else lives in collapsibl
 - **Market news feed** (`/api/news`): Finviz News + CNBC, MarketWatch, Yahoo Finance, Investing.com and Cointelegraph RSS, de-duplicated and sorted by time, refreshed every minute, with source and text filters.
 - In day-trading mode: a compact Finviz block (float, short float, relative volume, earnings date) and the active ticker's news.
 
+## Install on your phone (PWA)
+
+The site is an installable web app: `src/app/manifest.ts`, icons in `public/icons` plus `src/app/apple-icon.png`, and a service worker in `public/sw.js` (it caches only the app shell; quotes in `/api/*` are never cached).
+
+- **Android (Chrome)**: the "📲 Add to Home screen" button at the bottom of the page opens the system install dialog, or use menu ⋮ → "Install app".
+- **iPhone/iPad (Safari)**: Share ⬆ → "Add to Home Screen" → "Add". The button shows these steps.
+- **Desktop (Chrome/Edge)**: the install icon in the address bar.
+
+The app opens full-screen without the address bar, with quick shortcuts to "Day trading" and "Market overview".
+
 ## Running it
 
 ```bash

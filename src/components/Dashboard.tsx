@@ -172,7 +172,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen overflow-x-clip">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-brand/40 bg-bg/85 shadow-[0_0_24px_rgba(5,217,232,0.15)] backdrop-blur-xl">
+      <header style={{ paddingTop: "env(safe-area-inset-top)" }} className="relative top-0 z-30 border-b sm:sticky border-brand/40 bg-bg/85 shadow-[0_0_24px_rgba(5,217,232,0.15)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center border border-brand bg-brand/10 text-xl font-bold text-brand shadow-[0_0_14px_rgba(5,217,232,0.6)]">

@@ -1,9 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import InstallPrompt from "@/components/InstallPrompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "NEON//PULSE — S&P 500, Bitcoin, Золото, Акции",
-  description: "Киберпанк-дэшборд рынков: индексы, биткоин, золото, акции, технические сигналы и торговые идеи.",
+  description: "Киберпанк-дэшборд рынков: котировки онлайн, свечные графики, дэйтрейдинг, Finviz и новости.",
+  applicationName: "NeonPulse",
+  appleWebApp: {
+    capable: true,
+    title: "NeonPulse",
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#05010d",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -18,7 +34,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap"
         />
       </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <InstallPrompt />
+      </body>
     </html>
   );
 }
