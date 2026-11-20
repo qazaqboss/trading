@@ -8,10 +8,10 @@ import { Change, LivePrice, SectionTitle, Segmented, Sparkline } from "./ui";
 
 /* ───────────── US symbol directory (lazy, shared) ───────────── */
 
-export type SymbolRow = [string, string, string, 0 | 1];
+export type SymbolRow = [string, string, string, 0 | 1, number?, number?, string?];
 interface Directory {
   rows: SymbolRow[];
-  source: "nasdaqtrader" | "fallback";
+  source: string;
 }
 let dirPromise: Promise<Directory> | null = null;
 
@@ -314,18 +314,21 @@ export function UsStocksPanel({
   const dir = useUsDirectory(true);
   const [q, setQ] = useState("");
   const [exch, setExch] = useState<"all" | "Nasdaq" | "NYSE" | "other">("all");
-  const [kind, setKind] = useState<"stock" | "etf" | "all">("stock");
+  const [kind, setKind] = useState<"stock" | "etf" | "all" | "ipo">("stock");
+  const year = new Date().getFullYear();
   const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
     if (!dir) return [];
     const base = dir.rows.filter(
       (r) =>
-        (kind === "all" || (kind === "etf" ? r[3] === 1 : r[3] === 0)) &&
+        (kind === "all" || (kind === "ipo" ? (r[5] ?? 0) >= year : kind === "etf" ? r[3] === 1 : r[3] === 0)) &&
         (exch === "all" || (exch === "other" ? r[2] !== "Nasdaq" && r[2] !== "NYSE" : r[2] === exch)),
     );
-    return q ? rankMatches(base, q, 500) : base;
-  }, [dir, q, exch, kind]);
+    if (q) return rankMatches(base, q, 500);
+    // fresh listings: biggest first
+    return kind === "ipo" ? [...base].sort((a, b) => (b[4] ?? 0) - (a[4] ?? 0)) : base;
+  }, [dir, q, exch, kind, year]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const cur = Math.min(page, pages - 1);
@@ -381,6 +384,7 @@ export function UsStocksPanel({
               { value: "stock", label: "Акции" },
               { value: "etf", label: "ETF" },
               { value: "all", label: "Все" },
+              { value: "ipo", label: `IPO ${year}` },
             ]}
           />
           <span className="ml-auto text-xs text-muted">Найдено: {fmtNum(filtered.length)}</span>
@@ -399,7 +403,7 @@ export function UsStocksPanel({
               </tr>
             </thead>
             <tbody>
-              {rows.map(([s, name, ex, etf]) => {
+              {rows.map(([s, name, ex, etf, , ipoYear]) => {
                 const qt = quotes[s];
                 return (
                   <tr key={s} onClick={() => onOpen(s, name)} className="cursor-pointer border-b border-line/60 hover:bg-white/[0.03]">
@@ -409,6 +413,7 @@ export function UsStocksPanel({
                     <td className="px-2 py-2 font-semibold text-brand">
                       {s}
                       {etf ? <span className="ml-1 text-[10px] text-warn">ETF</span> : null}
+                      {ipoYear && ipoYear >= year ? <span className="ml-1 text-[10px] text-neon-pink">IPO {ipoYear}</span> : null}
                     </td>
                     <td className="max-w-[280px] truncate px-2 text-muted">{name}</td>
                     <td className="px-2 text-xs text-faint">{ex}</td>

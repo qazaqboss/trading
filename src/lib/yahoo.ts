@@ -71,7 +71,7 @@ export async function fetchHistory(symbol: string): Promise<{ bars: Bar[]; name?
     byDay.set(day(r.meta.regularMarketTime), r.meta.regularMarketPrice);
   }
   const bars = [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([t, c]) => ({ t, c }));
-  if (bars.length < 30) throw new Error("недостаточно истории");
+  if (bars.length < 1) throw new Error("нет истории");
   return { bars, name: r.meta.longName ?? r.meta.shortName };
 }
 

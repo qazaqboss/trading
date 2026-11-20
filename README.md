@@ -39,6 +39,20 @@ The main screen shows only the core markets; everything else lives in collapsibl
 - **Market news feed** (`/api/news`): Finviz News + CNBC, MarketWatch, Yahoo Finance, Investing.com and Cointelegraph RSS, de-duplicated and sorted by time, refreshed every minute, with source and text filters.
 - In day-trading mode: a compact Finviz block (float, short float, relative volume, earnings date) and the active ticker's news.
 
+## IPOs and new tickers
+
+The list of tickers updates on its own; you don't need to add anything by hand:
+
+- **Directory of all US stocks** = Nasdaq Trader + the GitHub repo [rreichel3/US-Stock-Symbols](https://github.com/rreichel3/US-Stock-Symbols) (updated every night by GitHub Actions; covers every NASDAQ/NYSE/AMEX listing with market cap, sector and IPO year). The server re-reads it every 6–12 h, so new listings show up in search and in "All US stocks" automatically. The directory has an "IPO <year>" filter, and fresh listings get a badge.
+- **"IPO and new tickers" panel** (`/api/ipo`) on the main screen:
+  - **Upcoming**: date and days remaining, expected price range, number of shares, deal size;
+  - **Priced**: offer price, current price and change since the IPO;
+  - **Filings** (S-1 filed);
+  - **New tickers**: everything added over the last 7 days, from the git history of the same repo (SPAC warrants and units are hidden);
+  - **IPO <year>**: every company listed this year, largest market cap first.
+- IPO calendar sources: the Nasdaq IPO calendar, falling back to Yahoo (the same `ipo_info` request yfinance sends, github.com/ranaroussi/yfinance).
+- **Brand-new tickers**: if Yahoo doesn't know a stock yet, price and history are taken from the Nasdaq API. History of even a few days is enough to open it (the 30-day minimum is gone). If the ticker isn't trading yet, you get its IPO date and price range instead of an error.
+
 ## Crypto page (`/crypto`)
 
 A separate page covering every coin listed on CoinGecko (17,000+), meme coins included:

@@ -169,7 +169,7 @@ export async function finvizQuote(symbol: string): Promise<Fundamentals> {
 
 let crumbCache: { at: number; cookie: string; crumb: string } | null = null;
 
-async function yahooCrumb() {
+export async function yahooCrumb() {
   if (crumbCache && Date.now() - crumbCache.at < 3600_000) return crumbCache;
   const r1 = await fetch("https://fc.yahoo.com", { headers: BROWSER_HEADERS, redirect: "manual", cache: "no-store" }).catch(() => null);
   const setCookies = r1?.headers.getSetCookie?.() ?? [];

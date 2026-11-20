@@ -1,6 +1,7 @@
 import { connection, type NextRequest } from "next/server";
 import { getMarket } from "@/lib/market";
 import { demoCandles } from "@/lib/ta";
+import { nasdaqHistory } from "@/lib/ipo";
 import { fetchCandles, TF_YAHOO } from "@/lib/yahoo";
 import type { CandlesPayload, Timeframe } from "@/lib/types";
 
@@ -20,6 +21,15 @@ export async function GET(req: NextRequest) {
       const body: CandlesPayload = { symbol, tf, name, source: "yahoo", candles };
       return Response.json(body, { headers: { "Cache-Control": "no-store" } });
     } catch (e) {
+      if ((tf === "1d" || tf === "1wk") && /^[A-Z]{1,5}(-[A-Z])?$/.test(symbol)) {
+        try {
+          const { ohlc } = await nasdaqHistory(symbol);
+          const body: CandlesPayload = { symbol, tf, source: "yahoo", candles: ohlc };
+          return Response.json(body, { headers: { "Cache-Control": "no-store" } });
+        } catch {
+          /* fall through */
+        }
+      }
       const market = await getMarket();
       if (market.source !== "demo") return Response.json({ error: `Нет свечей по ${symbol}: ${(e as Error).message}` }, { status: 502 });
     }

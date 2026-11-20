@@ -1,6 +1,7 @@
 import { connection, type NextRequest } from "next/server";
 import { getMarket } from "@/lib/market";
-import { fetchQuotes } from "@/lib/yahoo";
+import { nasdaqQuote } from "@/lib/ipo";
+import { fetchQuotes, mapLimit } from "@/lib/yahoo";
 import type { LiveQuote } from "@/lib/types";
 
 const MAX = 120;
@@ -20,6 +21,13 @@ export async function GET(req: NextRequest) {
       quotes = await fetchQuotes(symbols);
     } catch {
       quotes = [];
+    }
+    // fresh IPOs: Yahoo may not know the ticker yet — ask Nasdaq (plain US tickers only, capped)
+    const have = new Set(quotes.map((q) => q.symbol));
+    const missing = symbols.filter((s) => !have.has(s) && /^[A-Z]{1,5}(-[A-Z])?$/.test(s)).slice(0, 8);
+    if (quotes.length && missing.length) {
+      const extra = await mapLimit(missing, 4, (s) => nasdaqQuote(s));
+      extra.forEach((r) => r.status === "fulfilled" && r.value && quotes.push(r.value));
     }
   }
   if (quotes.length) return Response.json({ source: "live", quotes }, { headers: { "Cache-Control": "no-store" } });

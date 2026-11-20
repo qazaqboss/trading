@@ -142,3 +142,32 @@ export interface Fundamentals {
   news: NewsItem[];
   updatedAt: string;
 }
+
+export interface IpoItem {
+  symbol?: string;
+  company: string;
+  exchange?: string;
+  date?: string; // YYYY-MM-DD (expected, priced or filed)
+  status: "upcoming" | "priced" | "filed" | "withdrawn";
+  priceLow?: number;
+  priceHigh?: number;
+  price?: number; // final offer price
+  shares?: number;
+  dealSize?: number; // USD
+  source: string;
+}
+
+/** Row from the rreichel3/US-Stock-Symbols nightly snapshot. */
+export interface GhStock {
+  symbol: string;
+  name: string;
+  exchange: string;
+  sector?: string;
+  industry?: string;
+  country?: string;
+  ipoYear?: number;
+  marketCap?: number;
+  last?: number;
+  pct?: number;
+  volume?: number;
+}

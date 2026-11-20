@@ -8,6 +8,7 @@ import type { Asset, Candle, Idea, MarketPayload, Timeframe } from "@/lib/types"
 import { SymbolSearch, UsStocksPanel, Watchlist } from "./LivePanels";
 import DayTrading, { ChartToolbar } from "./DayTrading";
 import { FundamentalsPanel, MarketNewsPanel, TickerNewsPanel } from "./FinPanels";
+import IpoPanel from "./IpoPanel";
 import TradingChart, { type Indicators } from "./TradingChart";
 import { useCandles } from "@/lib/candles";
 import {
@@ -349,6 +350,9 @@ export default function Dashboard() {
 
             {/* Top ideas */}
             <IdeasPanel ideas={data.ideas} onSelect={openSymbol} />
+
+            {/* IPO calendar + newly listed tickers */}
+            <IpoPanel onOpen={openSymbol} />
 
             {asset?.cls === "stock" && <MarketNewsPanel />}
 
