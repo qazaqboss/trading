@@ -31,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@900&display=swap"
         />
       </head>
       <body className="min-h-full">

@@ -40,7 +40,7 @@ export function HeroCard({ a, accent, active, onClick }: { a: Asset; accent: str
             <span className="text-sm font-medium tracking-widest text-muted uppercase">{a.name}</span>
           </div>
           <div className="mt-1 text-4xl font-semibold tracking-tight">
-            <LivePrice value={a.m.price} style={{ color: accent, textShadow: `0 0 8px ${accent}, 0 0 24px ${accent}88` }} />
+            <LivePrice value={a.m.price} className="font-semibold" style={{ color: accent }} />
           </div>
           <div className="mt-1 flex items-center gap-2 text-sm">
             <Change v={a.m.ch1d} className="font-semibold" />

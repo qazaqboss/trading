@@ -90,7 +90,8 @@ export default function TradingChart({
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: C.text,
-        fontFamily: '"Share Tech Mono", ui-monospace, monospace',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontSize: 12,
         attributionLogo: false,
         panes: { separatorColor: "rgba(5,217,232,0.25)" },
       },

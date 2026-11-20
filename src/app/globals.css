@@ -14,9 +14,9 @@
   --color-brand: #05d9e8;
   --color-neon-pink: #ff2a6d;
   --color-neon-purple: #d300c5;
-  --font-sans: "Share Tech Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --font-mono: "Share Tech Mono", ui-monospace, Menlo, Consolas, monospace;
-  --font-display: "Orbitron", "Share Tech Mono", ui-monospace, monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Trebuchet MS", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-display: "Orbitron", "Inter", sans-serif;
 }
 
 html {
@@ -34,7 +34,12 @@ body {
   background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
-  letter-spacing: 0.01em;
+  font-size: 14px;
+  /* TradingView-like numerals: equal-width digits, slashed zero, crisp rendering */
+  font-feature-settings: "tnum" 1, "zero" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* CRT scanlines + vignette over everything */
@@ -45,14 +50,22 @@ body::after {
   pointer-events: none;
   z-index: 50;
   background:
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 4px),
     radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.45));
 }
 
 h1, h2, h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+h1.glitch {
   font-family: var(--font-display);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+h2.neon-text, h3.neon-text {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* Panels: cut corners, neon edge, inner glow */
@@ -94,17 +107,15 @@ h1, h2, h3 {
   box-shadow: 0 0 10px var(--color-neon-pink);
 }
 
-.tnum {
-  font-variant-numeric: tabular-nums;
-}
 
-.text-up { text-shadow: 0 0 8px rgba(0, 255, 159, 0.45); }
-.text-down { text-shadow: 0 0 8px rgba(255, 42, 109, 0.45); }
-.text-warn { text-shadow: 0 0 8px rgba(249, 240, 2, 0.4); }
+.tnum {
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: -0.01em;
+}
 
 .neon-text {
   color: var(--color-brand);
-  text-shadow: 0 0 6px rgba(5, 217, 232, 0.8), 0 0 18px rgba(5, 217, 232, 0.5);
+  /* no blur on numbers — glow only on section headings below */
 }
 
 /* Glitch heading */
@@ -195,4 +206,8 @@ h1, h2, h3 {
 .flash-down { animation: flash-down 0.9s ease-out; }
 @media (prefers-reduced-motion: reduce) {
   .flash-up, .flash-down { animation: none; }
+}
+
+h2.neon-text, h3.neon-text {
+  text-shadow: 0 0 10px rgba(5, 217, 232, 0.35);
 }
