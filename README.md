@@ -39,6 +39,22 @@ The main screen shows only the core markets; everything else lives in collapsibl
 - **Market news feed** (`/api/news`): Finviz News + CNBC, MarketWatch, Yahoo Finance, Investing.com and Cointelegraph RSS, de-duplicated and sorted by time, refreshed every minute, with source and text filters.
 - In day-trading mode: a compact Finviz block (float, short float, relative volume, earnings date) and the active ticker's news.
 
+## Crypto page (`/crypto`)
+
+A separate page covering every coin listed on CoinGecko (17,000+), meme coins included:
+
+- **Coin table** with logos, price, 1h/24h/7d change, volume, market cap and a 7-day sparkline; 100 coins per page across every page, plus jump-to-page.
+- **Categories**: All, 🐸 Meme coins, Solana memes, Layer 1, DeFi, AI, GameFi, Stablecoins, ★ Favourites.
+- **Live prices**: one Binance `!miniTicker@arr` WebSocket updates every USDT pair (~400 coins) every second; the rest refresh from CoinGecko every minute. Live coins are marked with a green dot.
+- **Market header**: total market cap, 24h volume, BTC/ETH dominance, number of coins, fear & greed index. Also trending coins on CoinGecko and the day's top gainers and losers.
+- **Search across all coins** (CoinGecko `/search`).
+- **Coin page** (`/crypto#coin=pepe`, shareable link):
+  - live chart with timeframes 1m–1W from Binance, or CoinGecko candles for coins without a Binance pair;
+  - market cap, FDV, volume, supply (circulating / total / max), ATH/ATL with dates;
+  - changes over 1h–1y, project links, contracts (copy on click), description and news.
+- Micro-prices display correctly (`0,000007100`, `0,0₈4567`), and the chart's price scale picks its precision automatically.
+- CoinGecko is called directly from the browser; when it hits the rate limit, the call goes through `/api/crypto` with a shared server cache.
+
 ## Install on your phone (PWA)
 
 The site is an installable web app: `src/app/manifest.ts`, icons in `public/icons` plus `src/app/apple-icon.png`, and a service worker in `public/sw.js` (it caches only the app shell; quotes in `/api/*` are never cached).

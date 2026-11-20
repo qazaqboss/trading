@@ -80,6 +80,7 @@ export default function TradingChart({
   const fit = useRef(true);
   const prev = useRef<{ first: number; len: number }>({ first: 0, len: 0 });
   const candlesRef = useRef(candles);
+  const precision = useRef(-1);
   const [hover, setHover] = useState<Candle | null>(null);
 
   // chart instance
@@ -184,6 +185,7 @@ export default function TradingChart({
     markers.current = createSeriesMarkers(s.main as ISeriesApi<"Candlestick">, []);
     fit.current = true;
     prev.current = { first: 0, len: 0 };
+    precision.current = -1;
   }, [layoutKey, ind.volume, ind.ema, ind.vwap, ind.sma, ind.rsi, mode]);
 
   // data
@@ -200,6 +202,16 @@ export default function TradingChart({
     const mainData = () =>
       mode === "candles" ? candles.map((x) => ({ time: T(x.t), open: x.o, high: x.h, low: x.l, close: x.c })) : candles.map((x) => ({ time: T(x.t), value: x.c }));
 
+    // price-scale precision follows the instrument (micro-cap tokens need 8+ decimals)
+    const lastC = Math.abs(candles[candles.length - 1].c) || 1;
+    const prec = lastC >= 1 ? 2 : Math.min(12, Math.floor(-Math.log10(lastC)) + 4);
+    if (prec !== precision.current) {
+      precision.current = prec;
+      for (const [k, ser] of Object.entries(s)) {
+        if (k === "vol" || k === "rsi") continue;
+        ser.applyOptions({ priceFormat: { type: "price", precision: prec, minMove: 10 ** -prec } });
+      }
+    }
     const sameHead = prev.current.first === candles[0].t && candles.length - prev.current.len <= 1 && candles.length >= prev.current.len;
     const ema9 = ind.ema ? emaSeries(closes, 9) : [];
     const ema21 = ind.ema ? emaSeries(closes, 21) : [];

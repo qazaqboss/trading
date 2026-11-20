@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ACCENT, CLASS_LABEL, fmtPct, fmtPrice } from "@/lib/format";
 import { useCryptoStream, useLiveQuotes, useUsSession, useWatchlist, type UsSession } from "@/lib/live";
@@ -204,6 +205,9 @@ export default function Dashboard() {
                 {label}
               </button>
             ))}
+            <Link href="/crypto" className="px-3 py-1.5 text-xs font-semibold tracking-wider text-brand uppercase transition hover:bg-brand/10">
+              ◈ Крипто
+            </Link>
           </div>
           <div className="order-3 w-full sm:order-none sm:w-auto">
             <SymbolSearch onOpen={(sym, name) => (view === "day" ? pickDaySymbol(sym.toUpperCase()) : openSymbol(sym, name))} />
