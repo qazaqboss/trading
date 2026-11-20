@@ -24,6 +24,7 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       { name: "Дэйтрейдинг", short_name: "Day", url: "/#day", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
       { name: "Крипта и мем-коины", short_name: "Крипто", url: "/crypto", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+      { name: "Виджет для iPhone", short_name: "Виджет", url: "/widget", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
       { name: "Обзор рынка", short_name: "Обзор", url: "/#overview", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
     ],
   };

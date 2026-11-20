@@ -39,6 +39,19 @@ The main screen shows only the core markets; everything else lives in collapsibl
 - **Market news feed** (`/api/news`): Finviz News + CNBC, MarketWatch, Yahoo Finance, Investing.com and Cointelegraph RSS, de-duplicated and sorted by time, refreshed every minute, with source and text filters.
 - In day-trading mode: a compact Finviz block (float, short float, relative volume, earnings date) and the active ticker's news.
 
+## iPhone widget (`/widget`)
+
+iOS lets only apps put widgets on the home screen, so the widget runs through the free [Scriptable](https://scriptable.app) app:
+
+1. On `/widget`, choose tickers (presets: markets, crypto, mega-caps, "My stocks") and look at the live preview in small / medium / large size.
+2. Tap "Copy script" (or "Download NeonPulse.js"). The site address and tickers are already filled in.
+3. In Scriptable, tap ＋, paste, name it `NeonPulse`.
+4. Home screen → ＋ → Scriptable → pick a size → Script: NeonPulse. The **Parameter** field can override the tickers (`NVDA, TSLA, BTC-USD`).
+
+- Sizes: small (one ticker large with a chart + a second line), medium (4), large (9), extra large on iPad (12), and lock-screen widgets (line, circle, rectangle).
+- Data: `/api/widget?symbols=…` (prices, day change, intraday sparkline, NYSE session). The script caches the last response and shows ⚠ when offline.
+- Refresh: the script asks for every 5 minutes, but iOS decides the actual timing (usually 5–15 minutes). Tapping the widget opens the dashboard.
+
 ## IPOs and new tickers
 
 The list of tickers updates on its own; you don't need to add anything by hand:

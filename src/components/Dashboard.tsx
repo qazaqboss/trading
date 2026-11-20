@@ -209,6 +209,9 @@ export default function Dashboard() {
             <Link href="/crypto" className="px-3 py-1.5 text-xs font-semibold tracking-wider text-brand uppercase transition hover:bg-brand/10">
               ◈ Крипто
             </Link>
+            <Link href="/widget" className="hidden px-3 py-1.5 text-xs font-semibold tracking-wider text-brand uppercase transition hover:bg-brand/10 sm:block">
+              ▣ Виджет
+            </Link>
           </div>
           <div className="order-3 w-full sm:order-none sm:w-auto">
             <SymbolSearch onOpen={(sym, name) => (view === "day" ? pickDaySymbol(sym.toUpperCase()) : openSymbol(sym, name))} />

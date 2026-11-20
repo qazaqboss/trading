@@ -158,6 +158,11 @@ export default function InstallPrompt() {
             <p className="mt-4 text-[11px] text-faint">
               Приложение откроется на весь экран без адресной строки, с тем же онлайн-обновлением котировок. Ваш список «Мои акции» сохранится.
             </p>
+            {env.platform === "ios" && (
+              <a href="/widget" className="mt-3 block border border-neon-pink/60 px-3 py-2 text-center text-xs font-semibold text-neon-pink hover:bg-neon-pink hover:text-black">
+                ▣ Ещё можно поставить виджет с котировками на рабочий стол →
+              </a>
+            )}
           </div>
         </div>
       )}

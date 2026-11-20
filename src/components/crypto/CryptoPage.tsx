@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CATEGORIES, cg, liveFor, useBinanceAll, useCryptoWatch, type CgCoin, type CgGlobal, type CgSearch, type CgTrending, type LiveTick } from "@/lib/crypto";
 import { fmtBig, fmtNum } from "@/lib/format";
 import { MarketNewsPanel } from "../FinPanels";
+import { NavTabs, SiteLogo } from "../SiteNav";
 import { Change, LivePrice, Pill, SectionTitle, Sparkline } from "../ui";
 import CoinDetail from "./CoinDetail";
 
@@ -12,21 +12,6 @@ const PER_PAGE = 100;
 type SortKey = "rank" | "price" | "h1" | "h24" | "d7" | "vol" | "cap";
 
 /* ───────────── header with navigation + coin search ───────────── */
-
-function NavTabs() {
-  const tab = "px-3 py-1.5 text-xs font-semibold tracking-wider uppercase transition";
-  return (
-    <div className="flex border border-brand/50">
-      <Link href="/#overview" className={`${tab} text-brand hover:bg-brand/10`}>
-        Обзор
-      </Link>
-      <Link href="/#day" className={`${tab} text-brand hover:bg-brand/10`}>
-        ⚡ Дэйтрейдинг
-      </Link>
-      <span className={`${tab} bg-brand text-black shadow-[0_0_14px_rgba(5,217,232,0.6)]`}>◈ Крипто</span>
-    </div>
-  );
-}
 
 function CoinSearch({ onPick }: { onPick: (id: string) => void }) {
   const [q, setQ] = useState("");
@@ -219,16 +204,8 @@ export default function CryptoPage() {
     <div ref={top} className="min-h-screen overflow-x-clip">
       <header style={{ paddingTop: "env(safe-area-inset-top)" }} className="relative z-30 border-b border-brand/40 bg-bg/85 backdrop-blur-xl sm:sticky sm:top-0">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center border border-brand bg-brand/10 text-xl font-bold text-brand">◢</div>
-            <div>
-              <h1 data-text="NEON//PULSE" className="glitch text-xl leading-tight font-black">
-                NEON//PULSE
-              </h1>
-              <p className="text-[11px] tracking-[0.2em] text-neon-pink uppercase">&gt; крипта онлайн</p>
-            </div>
-          </Link>
-          <NavTabs />
+          <SiteLogo subtitle="крипта онлайн" />
+          <NavTabs active="crypto" />
           <div className="order-3 w-full sm:order-none sm:w-auto">
             <CoinSearch onPick={openCoin} />
           </div>
