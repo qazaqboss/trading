@@ -384,20 +384,20 @@ export function StocksTable({ stocks, onSelect, selected }: { stocks: Asset[]; o
           />
         }
       />
-      <div className="scroll-thin -mx-5 overflow-x-auto px-5">
-        <table className="w-full min-w-[860px] text-sm">
+      <div className="scroll-thin sm:-mx-5 sm:overflow-x-auto sm:px-5">
+        <table className="w-full text-sm sm:min-w-[860px] [&_td]:px-1 [&_th]:px-1 sm:[&_td]:px-3 sm:[&_th]:px-3">
           <thead className="text-left text-xs text-muted">
             <tr className="border-b border-line">
               <SortTh sort={sort} setSort={setSort} k="ticker">Тикер</SortTh>
               <SortTh sort={sort} setSort={setSort} k="price" className="text-right">Цена</SortTh>
               <SortTh sort={sort} setSort={setSort} k="ch1d" className="text-right">1Д</SortTh>
-              <SortTh sort={sort} setSort={setSort} k="ch1w" className="text-right">1Н</SortTh>
-              <SortTh sort={sort} setSort={setSort} k="ch1m" className="text-right">1М</SortTh>
+              <SortTh sort={sort} setSort={setSort} k="ch1w" className="text-right hidden sm:table-cell">1Н</SortTh>
+              <SortTh sort={sort} setSort={setSort} k="ch1m" className="text-right hidden sm:table-cell">1М</SortTh>
               <SortTh sort={sort} setSort={setSort} k="chYtd" className="text-right">YTD</SortTh>
-              <th className="px-3 py-2 font-medium">3 мес.</th>
-              <SortTh sort={sort} setSort={setSort} k="rsi14">RSI</SortTh>
-              <SortTh sort={sort} setSort={setSort} k="fromHigh" className="text-right">От макс.</SortTh>
-              <SortTh sort={sort} setSort={setSort} k="score">Сигнал</SortTh>
+              <th className="px-3 py-2 font-medium hidden sm:table-cell">3 мес.</th>
+              <SortTh sort={sort} setSort={setSort} k="rsi14" className="hidden sm:table-cell">RSI</SortTh>
+              <SortTh sort={sort} setSort={setSort} k="fromHigh" className="text-right hidden sm:table-cell">От макс.</SortTh>
+              <SortTh sort={sort} setSort={setSort} k="score" className="hidden sm:table-cell">Сигнал</SortTh>
             </tr>
           </thead>
           <tbody>
@@ -409,17 +409,17 @@ export function StocksTable({ stocks, onSelect, selected }: { stocks: Asset[]; o
               >
                 <td className="px-3 py-2.5">
                   <div className="font-semibold">{s.ticker}</div>
-                  <div className="text-[11px] text-faint">{s.name} · {s.sector}</div>
+                  <div className="max-w-[80px] truncate text-[11px] text-faint sm:max-w-none">{s.name} · {s.sector}</div>
                 </td>
                 <td className="px-3 text-right font-medium"><LivePrice value={s.m.price} /></td>
                 <td className="px-3 text-right"><Change v={s.m.ch1d} /></td>
-                <td className="px-3 text-right"><Change v={s.m.ch1w} /></td>
-                <td className="px-3 text-right"><Change v={s.m.ch1m} /></td>
+                <td className="px-3 text-right hidden sm:table-cell"><Change v={s.m.ch1w} /></td>
+                <td className="px-3 text-right hidden sm:table-cell"><Change v={s.m.ch1m} /></td>
                 <td className="px-3 text-right"><Change v={s.m.chYtd} digits={1} /></td>
-                <td className="px-3"><Sparkline data={s.history.slice(-63).map((b) => b.c)} width={90} height={26} fill={false} /></td>
-                <td className="px-3"><RsiBar v={s.m.rsi14} /></td>
-                <td className="px-3 text-right"><Change v={s.m.fromHigh} digits={1} /></td>
-                <td className="px-3"><ScorePill score={s.m.score} /></td>
+                <td className="px-3 hidden sm:table-cell"><Sparkline data={s.history.slice(-63).map((b) => b.c)} width={90} height={26} fill={false} /></td>
+                <td className="px-3 hidden sm:table-cell"><RsiBar v={s.m.rsi14} /></td>
+                <td className="px-3 text-right hidden sm:table-cell"><Change v={s.m.fromHigh} digits={1} /></td>
+                <td className="px-3 hidden sm:table-cell"><ScorePill score={s.m.score} /></td>
               </tr>
             ))}
           </tbody>
@@ -545,24 +545,24 @@ export function CorrelationMatrix({ labels, matrix }: { labels: string[]; matrix
   return (
     <section className="card p-5">
       <SectionTitle title="Корреляции" subtitle="Дневные доходности, 90 общих торговых дней" />
-      <div className="scroll-thin overflow-x-auto">
-        <table className="tnum mx-auto text-[11px]">
+      <div className="sm:overflow-x-auto">
+        <table className="tnum w-full table-fixed text-[9px] sm:mx-auto sm:w-auto sm:table-auto sm:text-[11px]">
           <thead>
             <tr>
               <th />
               {labels.map((l) => (
-                <th key={l} className="px-1 pb-1 font-medium text-muted">{l}</th>
+                <th key={l} className="px-0.5 pb-1 leading-tight font-medium break-words text-muted sm:px-1">{l}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {matrix.map((row, i) => (
               <tr key={labels[i]}>
-                <th className="pr-2 text-right font-medium whitespace-nowrap text-muted">{labels[i]}</th>
+                <th className="pr-1 text-right leading-tight font-medium text-muted sm:pr-2 sm:whitespace-nowrap">{labels[i]}</th>
                 {row.map((v, j) => (
                   <td key={j} className="p-0.5">
                     <div
-                      className="flex h-9 w-11 items-center justify-center rounded-[2px] text-white"
+                      className="flex h-7 w-full items-center justify-center rounded-[2px] text-white sm:h-9 sm:w-11"
                       style={{ background: i === j ? "rgba(255,255,255,0.06)" : color(v) }}
                       title={`${labels[i]} / ${labels[j]}: ${v}`}
                     >

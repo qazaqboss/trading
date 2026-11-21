@@ -247,16 +247,16 @@ function Movers({ onOpen, watch }: { onOpen: (s: string, n?: string) => void; wa
       ) : list.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted">Источник лидеров рынка сейчас недоступен.</p>
       ) : (
-        <div className="scroll-thin overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
+        <div className="sm:overflow-x-auto">
+          <table className="w-full text-sm sm:min-w-[560px]">
             <thead className="text-left text-xs text-muted">
               <tr className="border-b border-line">
                 <th className="px-2 py-2 font-medium" />
                 <th className="px-2 py-2 font-medium">Тикер</th>
                 <th className="px-2 py-2 text-right font-medium">Цена</th>
                 <th className="px-2 py-2 text-right font-medium">Изм.</th>
-                <th className="px-2 py-2 text-right font-medium">Объём</th>
-                <th className="px-2 py-2 text-right font-medium">Капитализация</th>
+                <th className="px-2 py-2 text-right font-medium hidden sm:table-cell">Объём</th>
+                <th className="px-2 py-2 text-right font-medium hidden sm:table-cell">Капитализация</th>
               </tr>
             </thead>
             <tbody>
@@ -267,7 +267,7 @@ function Movers({ onOpen, watch }: { onOpen: (s: string, n?: string) => void; wa
                   </td>
                   <td className="px-2 py-2">
                     <div className="font-semibold text-brand">{m.symbol}</div>
-                    <div className="max-w-[220px] truncate text-[11px] text-faint">{m.name}</div>
+                    <div className="max-w-[110px] truncate text-[11px] text-faint sm:max-w-[220px]">{m.name}</div>
                   </td>
                   <td className="px-2 text-right">
                     <LivePrice value={m.price} />
@@ -275,8 +275,8 @@ function Movers({ onOpen, watch }: { onOpen: (s: string, n?: string) => void; wa
                   <td className="px-2 text-right">
                     <Change v={m.chPct} />
                   </td>
-                  <td className="tnum px-2 text-right text-muted">{fmtBig(m.volume)}</td>
-                  <td className="tnum px-2 text-right text-muted">{fmtBig(m.marketCap)}</td>
+                  <td className="tnum px-2 text-right text-muted hidden sm:table-cell">{fmtBig(m.volume)}</td>
+                  <td className="tnum px-2 text-right text-muted hidden sm:table-cell">{fmtBig(m.marketCap)}</td>
                 </tr>
               ))}
             </tbody>
@@ -389,17 +389,17 @@ export function UsStocksPanel({
           />
           <span className="ml-auto text-xs text-muted">Найдено: {fmtNum(filtered.length)}</span>
         </div>
-        <div className="scroll-thin overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
+        <div className="sm:overflow-x-auto">
+          <table className="w-full text-sm sm:min-w-[640px]">
             <thead className="text-left text-xs text-muted">
               <tr className="border-b border-line">
                 <th className="w-6 px-2 py-2" />
                 <th className="px-2 py-2 font-medium">Тикер</th>
-                <th className="px-2 py-2 font-medium">Компания</th>
-                <th className="px-2 py-2 font-medium">Биржа</th>
+                <th className="px-2 py-2 font-medium hidden sm:table-cell">Компания</th>
+                <th className="px-2 py-2 font-medium hidden sm:table-cell">Биржа</th>
                 <th className="px-2 py-2 text-right font-medium">Цена</th>
                 <th className="px-2 py-2 text-right font-medium">Изм.</th>
-                <th className="px-2 py-2 font-medium">Сегодня</th>
+                <th className="px-2 py-2 font-medium hidden sm:table-cell">Сегодня</th>
               </tr>
             </thead>
             <tbody>
@@ -414,12 +414,13 @@ export function UsStocksPanel({
                       {s}
                       {etf ? <span className="ml-1 text-[10px] text-warn">ETF</span> : null}
                       {ipoYear && ipoYear >= year ? <span className="ml-1 text-[10px] text-neon-pink">IPO {ipoYear}</span> : null}
+                      <div className="max-w-[110px] truncate text-[11px] font-normal text-faint sm:hidden">{name}</div>
                     </td>
-                    <td className="max-w-[280px] truncate px-2 text-muted">{name}</td>
-                    <td className="px-2 text-xs text-faint">{ex}</td>
+                    <td className="max-w-[280px] truncate px-2 text-muted hidden sm:table-cell">{name}</td>
+                    <td className="px-2 text-xs text-faint hidden sm:table-cell">{ex}</td>
                     <td className="px-2 text-right">{qt ? <LivePrice value={qt.price} /> : <span className="text-faint">…</span>}</td>
                     <td className="px-2 text-right">{qt ? <Change v={qt.chPct} /> : null}</td>
-                    <td className="px-2">
+                    <td className="px-2 hidden sm:table-cell">
                       <Sparkline data={qt?.spark ?? []} width={80} height={22} fill={false} />
                     </td>
                   </tr>

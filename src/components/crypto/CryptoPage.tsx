@@ -219,7 +219,7 @@ export default function CryptoPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1440px] space-y-5 px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-[1440px] space-y-5 px-2.5 py-5 sm:px-6 sm:py-6">
         {/* market-wide stats */}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
           <Strip label="Капитализация рынка" value={global ? fmtBig(global.total_market_cap.usd, "$") : "…"} sub={global ? <Change v={global.market_cap_change_percentage_24h_usd} /> : null} />
@@ -273,20 +273,20 @@ export default function CryptoPage() {
             ))}
           </div>
           {err && <div className="mb-2 border border-down/40 bg-down/10 px-3 py-1.5 text-xs text-down">Ошибка загрузки: {err}</div>}
-          <div className="scroll-thin overflow-x-auto">
-            <table className="w-full min-w-[920px] text-sm">
+          <div className="sm:overflow-x-auto">
+            <table className="w-full text-sm sm:min-w-[920px] max-sm:[&_td]:px-1 max-sm:[&_th]:px-1">
               <thead className="text-left text-xs text-muted">
                 <tr className="border-b border-line">
                   <th className="w-6" />
-                  <SortTh sort={sort} setSort={setSort} k="rank">#</SortTh>
+                  <SortTh sort={sort} setSort={setSort} k="rank" cls="hidden sm:table-cell">#</SortTh>
                   <th className="px-2 py-2 font-medium">Монета</th>
                   <SortTh sort={sort} setSort={setSort} k="price" cls="text-right">Цена</SortTh>
-                  <SortTh sort={sort} setSort={setSort} k="h1" cls="text-right">1ч</SortTh>
+                  <SortTh sort={sort} setSort={setSort} k="h1" cls="text-right hidden sm:table-cell">1ч</SortTh>
                   <SortTh sort={sort} setSort={setSort} k="h24" cls="text-right">24ч</SortTh>
-                  <SortTh sort={sort} setSort={setSort} k="d7" cls="text-right">7д</SortTh>
-                  <SortTh sort={sort} setSort={setSort} k="vol" cls="text-right">Объём 24ч</SortTh>
-                  <SortTh sort={sort} setSort={setSort} k="cap" cls="text-right">Капитализация</SortTh>
-                  <th className="px-2 py-2 font-medium">7 дней</th>
+                  <SortTh sort={sort} setSort={setSort} k="d7" cls="text-right hidden sm:table-cell">7д</SortTh>
+                  <SortTh sort={sort} setSort={setSort} k="vol" cls="text-right hidden sm:table-cell">Объём 24ч</SortTh>
+                  <SortTh sort={sort} setSort={setSort} k="cap" cls="text-right hidden sm:table-cell">Капитализация</SortTh>
+                  <th className="px-2 py-2 font-medium hidden sm:table-cell">7 дней</th>
                 </tr>
               </thead>
               <tbody>
@@ -311,29 +311,34 @@ export default function CryptoPage() {
                         {watch.has(r.c.id) ? "★" : "☆"}
                       </button>
                     </td>
-                    <td className="tnum px-2 text-faint">{r.c.market_cap_rank ?? "—"}</td>
+                    <td className="tnum px-2 text-faint hidden sm:table-cell">{r.c.market_cap_rank ?? "—"}</td>
                     <td className="px-2 py-2">
                       <div className="flex items-center gap-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={r.c.image} alt="" width={22} height={22} loading="lazy" className="h-[22px] w-[22px] rounded-full" />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="truncate font-semibold text-ink">{r.c.name}</span>
+                            <span className="max-w-[96px] truncate font-semibold text-ink sm:max-w-none">{r.c.name}</span>
                             {r.live && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-up" title="Binance live" />}
                           </div>
-                          <div className="text-[11px] text-faint">{r.c.symbol.toUpperCase()}</div>
+                          <div className="text-[11px] text-faint">
+                            {r.c.symbol.toUpperCase()}
+                            <span className="sm:hidden">
+                              {r.c.market_cap_rank ? ` · #${r.c.market_cap_rank}` : ""} · {fmtBig(r.c.market_cap ?? 0, "$")}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-2 text-right font-medium">
                       <LivePrice value={r.price} />
                     </td>
-                    <td className="px-2 text-right">{isFinite(r.h1) ? <Change v={r.h1} digits={1} /> : "—"}</td>
+                    <td className="px-2 text-right hidden sm:table-cell">{isFinite(r.h1) ? <Change v={r.h1} digits={1} /> : "—"}</td>
                     <td className="px-2 text-right">{isFinite(r.h24) ? <Change v={r.h24} digits={1} /> : "—"}</td>
-                    <td className="px-2 text-right">{isFinite(r.d7) ? <Change v={r.d7} digits={1} /> : "—"}</td>
-                    <td className="tnum px-2 text-right text-muted">{fmtBig(r.c.total_volume ?? 0, "$")}</td>
-                    <td className="tnum px-2 text-right text-ink">{fmtBig(r.c.market_cap ?? 0, "$")}</td>
-                    <td className="px-2">
+                    <td className="px-2 text-right hidden sm:table-cell">{isFinite(r.d7) ? <Change v={r.d7} digits={1} /> : "—"}</td>
+                    <td className="tnum px-2 text-right text-muted hidden sm:table-cell">{fmtBig(r.c.total_volume ?? 0, "$")}</td>
+                    <td className="tnum px-2 text-right text-ink hidden sm:table-cell">{fmtBig(r.c.market_cap ?? 0, "$")}</td>
+                    <td className="px-2 hidden sm:table-cell">
                       <Sparkline data={r.c.sparkline_in_7d?.price ?? []} width={110} height={30} fill={false} />
                     </td>
                   </tr>

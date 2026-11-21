@@ -188,11 +188,11 @@ export default function WidgetBuilder() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1200px] space-y-5 px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-[1200px] space-y-5 px-2.5 py-5 sm:px-6 sm:py-6">
         <section className="card p-5">
           <SectionTitle title="Виджет котировок на экран iPhone" subtitle="Работает через бесплатное приложение Scriptable — без App Store-приложения от нас" />
           <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-            <div className="space-y-5">
+            <div className="min-w-0 space-y-5">
               <div>
                 <div className="mb-2 text-xs font-semibold text-muted">1. Тикеры в виджете (до 12, порядок = порядок строк)</div>
                 <div className="flex flex-wrap gap-1.5">
@@ -262,7 +262,7 @@ export default function WidgetBuilder() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex min-w-0 flex-col items-center gap-3">
               <Segmented
                 value={size}
                 onChange={setSize}
@@ -272,8 +272,10 @@ export default function WidgetBuilder() {
                   { value: "large", label: "Большой" },
                 ]}
               />
-              <div className="grid min-h-[400px] w-full place-items-center rounded-[28px] border border-line bg-[radial-gradient(circle_at_30%_20%,#2a0a45,#05010d_70%)] p-4">
-                <Preview size={size} data={data} />
+              <div className="grid min-h-[400px] w-full place-items-center overflow-hidden rounded-[28px] border border-line bg-[radial-gradient(circle_at_30%_20%,#2a0a45,#05010d_70%)] p-4">
+                <div className={size === "small" ? "" : "origin-center max-sm:scale-[0.76]"}>
+                  <Preview size={size} data={data} />
+                </div>
               </div>
               <span className="text-[11px] text-faint">Предпросмотр с живыми данными · обновляется каждые 30 с</span>
             </div>

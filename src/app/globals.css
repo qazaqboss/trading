@@ -23,6 +23,15 @@ html {
   color-scheme: dark;
 }
 
+/* never let the page pan sideways on phones; "clip" (unlike "hidden") keeps sticky headers working */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+
 body {
   background:
     radial-gradient(900px 500px at 0% 0%, rgba(211, 0, 197, 0.22), transparent 60%),
@@ -210,4 +219,29 @@ h2.neon-text, h3.neon-text {
 
 h2.neon-text, h3.neon-text {
   text-shadow: 0 0 10px rgba(5, 217, 232, 0.35);
+}
+
+/* phones: tables inside cards are compact so they never exceed the screen width */
+@media (max-width: 639px) {
+  .card table {
+    font-size: 12px;
+  }
+  .card table th,
+  .card table td {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .card table td:first-child,
+  .card table th:first-child {
+    padding-left: 0 !important;
+  }
+  .card table td:last-child,
+  .card table th:last-child {
+    padding-right: 0 !important;
+  }
+}
+@media (max-width: 639px) {
+  .card.p-5 {
+    padding: 12px;
+  }
 }

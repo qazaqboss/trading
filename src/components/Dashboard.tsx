@@ -189,7 +189,7 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-          <div className="flex border border-brand/50">
+          <div className="flex max-w-full border border-brand/50">
             {(
               [
                 ["overview", "Обзор"],
@@ -246,7 +246,7 @@ export default function Dashboard() {
         {data && <TickerTape assets={markets} onSelect={openSymbol} />}
       </header>
 
-      <main className="mx-auto max-w-[1440px] space-y-5 px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-[1440px] space-y-5 px-2.5 py-5 sm:px-6 sm:py-6">
         {error && !data && <div className="card p-4 text-sm text-down">Не удалось загрузить данные: {error}</div>}
         {data && data.errors.length > 0 && (
           <div className="border border-warn/30 bg-warn/10 px-4 py-2 text-xs text-warn">

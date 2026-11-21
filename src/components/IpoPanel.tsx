@@ -98,31 +98,31 @@ export default function IpoPanel({ onOpen }: { onOpen: (symbol: string, name?: s
             : "Нет данных."}
         </p>
       ) : (
-        <div className="scroll-thin overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
+        <div className="sm:overflow-x-auto">
+          <table className="w-full text-sm sm:min-w-[760px]">
             <thead className="text-left text-xs text-muted">
               <tr className="border-b border-line">
                 {active === "upcoming" || active === "priced" || active === "filed" ? (
                   <>
                     <th className="px-2 py-2 font-medium">Дата</th>
                     <th className="px-2 py-2 font-medium">Тикер</th>
-                    <th className="px-2 py-2 font-medium">Компания</th>
-                    <th className="px-2 py-2 font-medium">Биржа</th>
+                    <th className="px-2 py-2 font-medium hidden sm:table-cell">Компания</th>
+                    <th className="px-2 py-2 font-medium hidden sm:table-cell">Биржа</th>
                     <th className="px-2 py-2 text-right font-medium">{active === "priced" ? "Цена IPO" : "Диапазон"}</th>
                     {active === "priced" && <th className="px-2 py-2 text-right font-medium">Сейчас</th>}
                     {active === "priced" && <th className="px-2 py-2 text-right font-medium">От цены IPO</th>}
-                    <th className="px-2 py-2 text-right font-medium">Акций</th>
-                    <th className="px-2 py-2 text-right font-medium">Объём сделки</th>
+                    <th className="px-2 py-2 text-right font-medium hidden sm:table-cell">Акций</th>
+                    <th className="px-2 py-2 text-right font-medium hidden sm:table-cell">Объём сделки</th>
                   </>
                 ) : (
                   <>
                     <th className="px-2 py-2 font-medium">Тикер</th>
-                    <th className="px-2 py-2 font-medium">Компания</th>
-                    <th className="px-2 py-2 font-medium">Биржа</th>
-                    <th className="px-2 py-2 font-medium">Сектор</th>
+                    <th className="px-2 py-2 font-medium hidden sm:table-cell">Компания</th>
+                    <th className="px-2 py-2 font-medium hidden sm:table-cell">Биржа</th>
+                    <th className="px-2 py-2 font-medium hidden sm:table-cell">Сектор</th>
                     <th className="px-2 py-2 text-right font-medium">Цена</th>
                     <th className="px-2 py-2 text-right font-medium">Изм.</th>
-                    <th className="px-2 py-2 text-right font-medium">Капитализация</th>
+                    <th className="px-2 py-2 text-right font-medium hidden sm:table-cell">Капитализация</th>
                   </>
                 )}
               </tr>
@@ -143,17 +143,20 @@ export default function IpoPanel({ onOpen }: { onOpen: (symbol: string, name?: s
                       <td className="tnum px-2 py-2 whitespace-nowrap">
                         {fmtDay(i.date)}
                         {active === "upcoming" && isFinite(dd) && (
-                          <span className={`ml-1.5 text-[11px] ${dd <= 3 ? "text-warn" : "text-faint"}`}>{dd <= 0 ? "сегодня" : `через ${dd} дн.`}</span>
+                          <span className={`block text-[11px] sm:ml-1.5 sm:inline ${dd <= 3 ? "text-warn" : "text-faint"}`}>{dd <= 0 ? "сегодня" : `через ${dd} дн.`}</span>
                         )}
                       </td>
-                      <td className="px-2 font-semibold text-brand">{i.symbol ?? "—"}</td>
-                      <td className="max-w-[260px] truncate px-2 text-ink">{i.company}</td>
-                      <td className="px-2 text-xs text-faint">{i.exchange ?? "—"}</td>
+                      <td className="px-2 font-semibold text-brand">
+                        {i.symbol ?? "—"}
+                        <div className="max-w-[120px] truncate text-[11px] font-normal text-faint sm:hidden">{i.company}</div>
+                      </td>
+                      <td className="max-w-[260px] truncate px-2 text-ink hidden sm:table-cell">{i.company}</td>
+                      <td className="px-2 text-xs text-faint hidden sm:table-cell">{i.exchange ?? "—"}</td>
                       <td className="tnum px-2 text-right">{active === "priced" ? (i.price ? `$${fmtNum(i.price, 2)}` : "—") : rangeTxt(i)}</td>
                       {active === "priced" && <td className="px-2 text-right">{q ? <LivePrice value={q.price} /> : <span className="text-faint">…</span>}</td>}
                       {active === "priced" && <td className={`tnum px-2 text-right ${upDown(since)}`}>{isFinite(since) ? fmtPct(since, 1) : "—"}</td>}
-                      <td className="tnum px-2 text-right text-muted">{i.shares ? fmtBig(i.shares) : "—"}</td>
-                      <td className="tnum px-2 text-right text-muted">{i.dealSize ? fmtBig(i.dealSize, "$") : i.shares && (i.priceHigh ?? i.price) ? fmtBig(i.shares * (i.priceHigh ?? i.price ?? 0), "$") : "—"}</td>
+                      <td className="tnum px-2 text-right text-muted hidden sm:table-cell">{i.shares ? fmtBig(i.shares) : "—"}</td>
+                      <td className="tnum px-2 text-right text-muted hidden sm:table-cell">{i.dealSize ? fmtBig(i.dealSize, "$") : i.shares && (i.priceHigh ?? i.price) ? fmtBig(i.shares * (i.priceHigh ?? i.price ?? 0), "$") : "—"}</td>
                     </tr>
                   );
                 })}
@@ -164,13 +167,14 @@ export default function IpoPanel({ onOpen }: { onOpen: (symbol: string, name?: s
                     <td className="px-2 py-2 font-semibold text-brand">
                       {g.symbol}
                       {g.ipoYear && data.year && g.ipoYear >= data.year && <span className="ml-1.5 text-[10px] text-warn">IPO {g.ipoYear}</span>}
+                      <div className="max-w-[160px] truncate text-[11px] font-normal text-faint sm:hidden">{g.name}</div>
                     </td>
-                    <td className="max-w-[280px] truncate px-2 text-ink">{g.name || "—"}</td>
-                    <td className="px-2 text-xs text-faint">{g.exchange || "—"}</td>
-                    <td className="max-w-[160px] truncate px-2 text-xs text-muted">{g.sector ?? "—"}</td>
+                    <td className="max-w-[280px] truncate px-2 text-ink hidden sm:table-cell">{g.name || "—"}</td>
+                    <td className="px-2 text-xs text-faint hidden sm:table-cell">{g.exchange || "—"}</td>
+                    <td className="max-w-[160px] truncate px-2 text-xs text-muted hidden sm:table-cell">{g.sector ?? "—"}</td>
                     <td className="px-2 text-right">{q ? <LivePrice value={q.price} /> : g.last ? <span className="tnum">{fmtPrice(g.last)}</span> : "—"}</td>
                     <td className="px-2 text-right">{q ? <Change v={q.chPct} /> : g.pct != null ? <Change v={g.pct} /> : "—"}</td>
-                    <td className="tnum px-2 text-right text-muted">{g.marketCap ? fmtBig(g.marketCap, "$") : "—"}</td>
+                    <td className="tnum px-2 text-right text-muted hidden sm:table-cell">{g.marketCap ? fmtBig(g.marketCap, "$") : "—"}</td>
                   </tr>
                 );
               })}
