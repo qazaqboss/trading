@@ -135,7 +135,7 @@ export function Gauge({ value, signed = false, size = 180, label }: { value: num
   );
 }
 
-export function SectionTitle({ title, subtitle, right }: { title: string; subtitle?: string; right?: ReactNode }) {
+export function SectionTitle({ title, subtitle, right }: { title: string; subtitle?: ReactNode; right?: ReactNode }) {
   return (
     <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
       <div>

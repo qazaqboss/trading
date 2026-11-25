@@ -157,7 +157,7 @@ const quoteCache = new Map<string, { at: number; v: Fundamentals }>();
 
 export async function finvizQuote(symbol: string): Promise<Fundamentals> {
   const hit = quoteCache.get(symbol);
-  if (hit && Date.now() - hit.at < 60_000) return hit.v;
+  if (hit && Date.now() - hit.at < 30_000) return hit.v;
   const html = await getHtml(`https://finviz.com/quote.ashx?t=${encodeURIComponent(symbol)}&p=d`);
   const v = parseQuotePage(html, symbol);
   quoteCache.set(symbol, { at: Date.now(), v });
@@ -357,7 +357,7 @@ export function parseFinvizNewsPage(html: string): NewsItem[] {
 let marketCache: { at: number; v: { items: NewsItem[]; sources: string[] } } | null = null;
 
 export async function marketNews(): Promise<{ items: NewsItem[]; sources: string[] }> {
-  if (marketCache && Date.now() - marketCache.at < 60_000) return marketCache.v;
+  if (marketCache && Date.now() - marketCache.at < 25_000) return marketCache.v;
   const jobs: Promise<{ src: string; items: NewsItem[] }>[] = [
     getHtml("https://finviz.com/news.ashx").then((h) => ({ src: "Finviz", items: parseFinvizNewsPage(h) })),
     ...MARKET_FEEDS.map((f) =>

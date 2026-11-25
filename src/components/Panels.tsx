@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fmtNum, fmtPct, fmtPrice, heatColor, upDown } from "@/lib/format";
 import type { Asset, Direction, FearGreed, Idea, Regime } from "@/lib/types";
 import { Change, Gauge, LivePrice, Pill, RsiBar, ScorePill, SectionTitle, Segmented, Sparkline, TrendPill } from "./ui";
@@ -221,19 +221,84 @@ export function FearGreedPanel({ fg }: { fg: FearGreed | null }) {
 const DIR_TONE: Record<Direction, "up" | "down" | "warn"> = { LONG: "up", SHORT: "down", WATCH: "warn" };
 const DIR_LABEL: Record<Direction, string> = { LONG: "LONG ▲", SHORT: "SHORT ▼", WATCH: "НАБЛЮДАТЬ" };
 
-export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: string) => void }) {
+const MARK_MS = 10 * 60_000;
+
+function useTick(ms: number) {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setNow(Date.now()), 0);
+    const id = setInterval(() => setNow(Date.now()), ms);
+    return () => {
+      clearTimeout(t);
+      clearInterval(id);
+    };
+  }, [ms]);
+  return now;
+}
+
+export function IdeasPanel({
+  ideas,
+  onSelect,
+  updatedAt,
+  mine = [],
+}: {
+  ideas: Idea[];
+  onSelect: (s: string) => void;
+  updatedAt?: number | null;
+  mine?: string[];
+}) {
   const [dir, setDir] = useState<"ALL" | Direction>("ALL");
-  const [cls, setCls] = useState<"all" | "markets" | "stock">("all");
+  const [cls, setCls] = useState<"all" | "markets" | "stock" | "mine">("all");
   const [showAll, setShowAll] = useState(false);
+  const now = useTick(15_000);
+
+  // remember what each idea looked like, flag new ones and ones whose direction/setup changed
+  const sig = ideas.map((i) => `${i.id}:${i.direction}:${i.setup}`).join("|");
+  const [seen, setSeen] = useState<{ sig: string; map: Record<string, string> } | null>(null);
+  const [marks, setMarks] = useState<Record<string, { kind: "new" | "upd"; t: number }>>({});
+  if (!seen || seen.sig !== sig) {
+    const map = Object.fromEntries(ideas.map((i) => [i.id, `${i.direction}:${i.setup}`]));
+    if (seen && seen.sig !== "" && now) {
+      const next = { ...marks };
+      for (const [id, v] of Object.entries(map)) {
+        if (!(id in seen.map)) next[id] = { kind: "new", t: now };
+        else if (seen.map[id] !== v) next[id] = { kind: "upd", t: now };
+      }
+      setMarks(next);
+    }
+    setSeen({ sig, map });
+  }
+  const markOf = (id: string) => {
+    const m = marks[id];
+    return m && now - m.t < MARK_MS ? m.kind : null;
+  };
+  const mineSet = new Set(mine);
+
   const filtered = ideas
     .filter((i) => dir === "ALL" || i.direction === dir)
-    .filter((i) => cls === "all" || (cls === "stock" ? i.cls === "stock" : i.cls !== "stock"));
+    .filter((i) =>
+      cls === "all" ? true : cls === "mine" ? mineSet.has(i.symbol) : cls === "stock" ? i.cls === "stock" : i.cls !== "stock",
+    )
+    // freshly changed ideas first, then by confidence
+    .sort((a, b) => Number(!!markOf(b.id)) - Number(!!markOf(a.id)) || b.confidence - a.confidence);
+  const fresh = ideas.filter((i) => markOf(i.id)).length;
   const list = showAll ? filtered : filtered.slice(0, 6);
   return (
     <section className="card p-5">
       <SectionTitle
         title="Торговые идеи"
-        subtitle={`${ideas.length} сетапов по техническим правилам · обновляются вместе с котировками`}
+        subtitle={
+          <span className="inline-flex flex-wrap items-center gap-x-2">
+            <span className="inline-flex items-center gap-1 text-up">
+              <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-up" /> LIVE
+            </span>
+            <span>
+              {ideas.length} сетапов · пересчёт с каждой ценой
+              {updatedAt ? ` · ${new Date(updatedAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : ""}
+            </span>
+            {fresh > 0 && <span className="text-neon-pink">· {fresh} новых/изменённых за 10 мин</span>}
+          </span>
+        }
         right={
           <div className="flex flex-wrap gap-2">
             <Segmented
@@ -243,6 +308,7 @@ export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: s
                 { value: "all", label: "Все" },
                 { value: "markets", label: "Рынки" },
                 { value: "stock", label: "Акции" },
+                { value: "mine", label: "★ Мои" },
               ]}
             />
             <Segmented
@@ -273,6 +339,11 @@ export function IdeasPanel({ ideas, onSelect }: { ideas: Idea[]; onSelect: (s: s
                   <span className="truncate text-xs text-faint">{i.name}</span>
                 </div>
                 <div className="mt-0.5 text-sm text-ink/90">{i.setup}</div>
+                {markOf(i.id) && (
+                  <span className={`mt-1 inline-block px-1 text-[9px] font-bold text-black ${markOf(i.id) === "new" ? "bg-neon-pink" : "bg-warn"}`}>
+                    {markOf(i.id) === "new" ? "NEW" : "ОБНОВЛЕНО"}
+                  </span>
+                )}
               </div>
               <Pill tone={DIR_TONE[i.direction]}>{DIR_LABEL[i.direction]}</Pill>
             </div>

@@ -40,11 +40,15 @@ export function useFundamentals(symbol: string | null) {
   return { data, ...state };
 }
 
-/** Polls news; ids that appear after the first load are reported as fresh. */
-export function useNews(symbol: string | null, intervalMs = 60_000, enabled = true) {
+export const NEWS_POLL_MS = 30_000;
+const FRESH_MS = 15 * 60_000;
+
+/** Polls news every 30 s; items that appear after the first load are "fresh" for 15 minutes. */
+export function useNews(symbol: string | null, intervalMs = NEWS_POLL_MS, enabled = true) {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [sources, setSources] = useState<string[]>([]);
-  const [fresh, setFresh] = useState<Set<string>>(new Set());
+  const [freshAt, setFreshAt] = useState<Record<string, number>>({});
+  const [lastAt, setLastAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const known = useRef<Set<string> | null>(null);
 
@@ -62,11 +66,15 @@ export function useNews(symbol: string | null, intervalMs = 60_000, enabled = tr
         if (known.current) {
           const k = known.current;
           const add = list.filter((n) => !k.has(n.id)).map((n) => n.id);
-          if (add.length) setFresh((f) => new Set([...f, ...add]));
+          if (add.length) {
+            const t = Date.now();
+            setFreshAt((f) => ({ ...f, ...Object.fromEntries(add.map((id) => [id, t])) }));
+          }
         }
         known.current = new Set(list.map((n) => n.id));
         setItems(list);
         setSources(j.sources ?? []);
+        setLastAt(Date.now());
       } catch {
         /* keep previous list */
       } finally {
@@ -75,7 +83,8 @@ export function useNews(symbol: string | null, intervalMs = 60_000, enabled = tr
     };
     const t = setTimeout(() => {
       setItems([]);
-      setFresh(new Set());
+      setFreshAt({});
+      setLastAt(null);
       setLoading(true);
       load();
     }, 0);
@@ -87,7 +96,29 @@ export function useNews(symbol: string | null, intervalMs = 60_000, enabled = tr
     };
   }, [symbol, intervalMs, enabled]);
 
-  return { items, sources, fresh, loading };
+  return { items, sources, freshAt, lastAt, loading };
+}
+
+/** Ids that are still "fresh" at time `now`. */
+function freshSet(freshAt: Record<string, number>, now: number | null): Set<string> {
+  if (!now) return new Set();
+  return new Set(Object.entries(freshAt).filter(([, t]) => now - t < FRESH_MS).map(([id]) => id));
+}
+
+const hms = (t: number | null) => (t ? new Date(t).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—");
+const hm = (sec: number) => new Date(sec * 1000).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+
+function LiveLine({ lastAt, freshCount, sources }: { lastAt: number | null; freshCount: number; sources: string[] }) {
+  return (
+    <span className="inline-flex flex-wrap items-center gap-x-2">
+      <span className="inline-flex items-center gap-1 text-up">
+        <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-up" /> LIVE
+      </span>
+      <span>обновление каждые 30 с · {hms(lastAt)}</span>
+      {freshCount > 0 && <span className="text-neon-pink">· +{freshCount} новых</span>}
+      {sources.length > 0 && <span className="text-faint">· {sources.join(", ")}</span>}
+    </span>
+  );
 }
 
 /* ───────────── helpers ───────────── */
@@ -96,7 +127,7 @@ function useNowMinute() {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     const t = setTimeout(() => setNow(Date.now()), 0);
-    const id = setInterval(() => setNow(Date.now()), 30_000);
+    const id = setInterval(() => setNow(Date.now()), 15_000);
     return () => {
       clearTimeout(t);
       clearInterval(id);
@@ -136,6 +167,7 @@ export function NewsList({ items, fresh, limit, dense = false }: { items: NewsIt
             </div>
             <div className="mt-0.5 flex flex-wrap gap-x-2 text-[11px] text-faint">
               <span className="text-neon-pink/80">{n.source}</span>
+              <span className="tnum text-muted">{hm(n.time)}</span>
               <span>{ago(n.time, now)}</span>
               {n.tickers?.slice(0, 4).map((t) => (
                 <span key={t} className="text-brand/70">${t}</span>
@@ -151,7 +183,9 @@ export function NewsList({ items, fresh, limit, dense = false }: { items: NewsIt
 /* ───────────── market news feed ───────────── */
 
 export function MarketNewsPanel() {
-  const { items, sources, fresh, loading } = useNews(null, 60_000);
+  const { items, sources, freshAt, lastAt, loading } = useNews(null);
+  const now = useNowMinute();
+  const fresh = freshSet(freshAt, now);
   const [q, setQ] = useState("");
   const [src, setSrc] = useState<string>("all");
   const [more, setMore] = useState(false);
@@ -161,7 +195,7 @@ export function MarketNewsPanel() {
     <section className="card p-5">
       <SectionTitle
         title="Новости рынка · онлайн"
-        subtitle={`Обновление каждую минуту${sources.length ? ` · ${sources.join(", ")}` : ""}`}
+        subtitle={<LiveLine lastAt={lastAt} freshCount={fresh.size} sources={sources} />}
         right={
           <input
             value={q}
@@ -203,10 +237,15 @@ export function MarketNewsPanel() {
 }
 
 export function TickerNewsPanel({ symbol, dense = false, maxH = "max-h-[520px]" }: { symbol: string; dense?: boolean; maxH?: string }) {
-  const { items, sources, fresh, loading } = useNews(symbol, 60_000);
+  const { items, sources, freshAt, lastAt, loading } = useNews(symbol);
+  const now = useNowMinute();
+  const fresh = freshSet(freshAt, now);
   return (
     <section className="card p-5">
-      <SectionTitle title={`Новости ${symbol.replace("-USD", "")}`} subtitle={`Онлайн · ${sources.join(", ") || "Finviz / Yahoo"}`} />
+      <SectionTitle
+        title={`Новости ${symbol.replace("-USD", "")}`}
+        subtitle={<LiveLine lastAt={lastAt} freshCount={fresh.size} sources={sources.length ? sources : ["Finviz / Yahoo"]} />}
+      />
       {loading && !items.length ? (
         <p className="py-4 text-center text-xs text-muted">&gt; загрузка…</p>
       ) : items.length === 0 ? (

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ACCENT, CLASS_LABEL, fmtPct, fmtPrice } from "@/lib/format";
 import { useCryptoStream, useLiveQuotes, useUsSession, useWatchlist, type UsSession } from "@/lib/live";
+import { buildIdeas, buildRegime, evaluate } from "@/lib/ideas";
+import { computeMetrics } from "@/lib/indicators";
 import type { Asset, Candle, Idea, MarketPayload, Timeframe } from "@/lib/types";
 import { SymbolSearch, UsStocksPanel, Watchlist } from "./LivePanels";
 import DayTrading, { ChartToolbar } from "./DayTrading";
@@ -28,7 +30,7 @@ import { Change, Collapsible, LivePrice, Pill } from "./ui";
 
 const HERO = ["^GSPC", "BTC-USD", "GC=F"];
 const MAIN_MINI = ["^NDX", "^DJI", "ETH-USD", "CL=F", "^VIX"];
-const SNAPSHOT_MS = 5 * 60_000; // history + indicators
+const SNAPSHOT_MS = 2 * 60_000; // daily history snapshot (ideas themselves are recomputed on every tick)
 const LIVE_MS = 5_000; // quotes
 
 type Extra = { asset: Asset; idea: Idea | null };
@@ -118,21 +120,59 @@ export default function Dashboard() {
       const price = crypto.prices[a.symbol] ?? q?.price;
       if (!price) return a;
       const prev = q?.prevClose ?? a.history[a.history.length - 2]?.c ?? a.m.price;
-      return {
-        ...a,
-        m: { ...a.m, price, ch1d: (price / prev - 1) * 100, fromHigh: (price / Math.max(a.m.high52, price) - 1) * 100 },
-      };
+      // put the live price into today's bar and recompute every indicator (RSI, SMA, score…)
+      const history = a.history.slice();
+      const last = history[history.length - 1];
+      if (last) history[history.length - 1] = { ...last, c: price };
+      const m = history.length > 1 ? computeMetrics(history, a.cls === "crypto" ? 365 : 252) : a.m;
+      return { ...a, history, m: { ...m, price, ch1d: (price / prev - 1) * 100 } };
     },
     [quotes, crypto.prices],
   );
 
   const assets = useMemo(() => data?.assets.map(applyLive) ?? [], [data, applyLive]);
+
+  /* ── ideas for "My stocks" that are outside the built-in universe ── */
+  const [watchAssets, setWatchAssets] = useState<Record<string, Asset>>({});
+  const watchKey = watch.list.join(",");
+  useEffect(() => {
+    if (!data) return;
+    let alive = true;
+    const known = new Set(data.assets.map((a) => a.symbol));
+    const todo = watchKey.split(",").filter((s) => s && !known.has(s)).slice(0, 12);
+    const load = async () => {
+      const got: Record<string, Asset> = {};
+      for (let i = 0; i < todo.length; i += 3) {
+        const part = await Promise.all(
+          todo.slice(i, i + 3).map((s) =>
+            fetch(`/api/asset?symbol=${encodeURIComponent(s)}`)
+              .then((r) => (r.ok ? r.json() : null))
+              .catch(() => null),
+          ),
+        );
+        part.forEach((j) => j?.asset && (got[j.asset.symbol] = j.asset));
+      }
+      if (alive) setWatchAssets(got);
+    };
+    const t = setTimeout(load, 0);
+    const iv = setInterval(load, 5 * 60_000);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+      clearInterval(iv);
+    };
+  }, [data, watchKey]);
+  const liveWatch = useMemo(() => Object.values(watchAssets).map(applyLive), [watchAssets, applyLive]);
+
+  // live ideas + regime: rebuilt whenever a quote changes
+  const ideas = useMemo(() => buildIdeas([...assets, ...liveWatch]), [assets, liveWatch]);
+  const regime = useMemo(() => (assets.length ? buildRegime(assets) : data?.regime), [assets, data]);
   const bySymbol = useMemo(() => new Map(assets.map((a) => [a.symbol, a])), [assets]);
   const markets = assets.filter((a) => a.cls !== "stock");
   const stocks = assets.filter((a) => a.cls === "stock");
   const extraAsset = extra[selected] ? applyLive(extra[selected].asset) : undefined;
   const asset = bySymbol.get(selected) ?? extraAsset ?? assets[0];
-  const idea = data?.ideas.find((i) => i.symbol === asset?.symbol) ?? extra[asset?.symbol ?? ""]?.idea ?? null;
+  const idea = ideas.find((i) => i.symbol === asset?.symbol) ?? (extraAsset ? evaluate(extraAsset) : null);
   const accent = ACCENT[asset?.symbol ?? ""] ?? "#05d9e8";
   const chartData = useCandles(asset?.symbol ?? "", tf, view === "overview" && !!asset);
   const fallbackCandles: Candle[] = useMemo(
@@ -352,7 +392,7 @@ export default function Dashboard() {
             )}
 
             {/* Top ideas */}
-            <IdeasPanel ideas={data.ideas} onSelect={openSymbol} />
+            <IdeasPanel ideas={ideas} onSelect={openSymbol} updatedAt={lastAt} mine={watch.list} />
 
             {/* IPO calendar + newly listed tickers */}
             <IpoPanel onOpen={openSymbol} />
@@ -384,11 +424,11 @@ export default function Dashboard() {
                       ))}
                   </div>
                   <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <Stat label="Режим рынка" value={data.regime.label} sub={`индекс ${data.regime.score > 0 ? "+" : ""}${data.regime.score}`} />
+                    <Stat label="Режим рынка" value={regime?.label ?? "—"} sub={`индекс ${(regime?.score ?? 0) > 0 ? "+" : ""}${regime?.score ?? 0}`} />
                     <Stat
                       label="Активных идей"
-                      value={String(data.ideas.length)}
-                      sub={`${data.ideas.filter((i) => i.direction === "LONG").length} long · ${data.ideas.filter((i) => i.direction === "SHORT").length} short`}
+                      value={String(ideas.length)}
+                      sub={`${ideas.filter((i) => i.direction === "LONG").length} long · ${ideas.filter((i) => i.direction === "SHORT").length} short`}
                     />
                     <Stat
                       label="Акций выше SMA50"
@@ -405,7 +445,7 @@ export default function Dashboard() {
                     />
                   </div>
                   <div className="grid gap-4 lg:grid-cols-3">
-                    <RegimePanel regime={data.regime} />
+                    {regime && <RegimePanel regime={regime} />}
                     <FearGreedPanel fg={data.fearGreed} />
                     <PerformanceBars assets={markets} />
                   </div>
